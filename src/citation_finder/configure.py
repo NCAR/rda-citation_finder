@@ -1,4 +1,9 @@
+import os
+import sys
+
+
 def configure(settings_file):
+    print("Creating 'local_settings.py' ...")
     with open(settfiles_file, "r") as f:
         lines = f.read().splitlines()
 
@@ -13,3 +18,6 @@ def configure(settings_file):
     with open(os.path.join(os.path.dirname(__file__), "local_settings.py"), "w") as f:
         f.write("temp_dir = \"" + temp_dir + "\"\n")
         f.write("default_asset_type = \"" + def_asset + "\"\n")
+
+    print("... done.")
+    sys.exit(0)
