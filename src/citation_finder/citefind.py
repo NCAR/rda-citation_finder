@@ -5,11 +5,14 @@ def main():
     if len(sys.argv[1:]) == 0 or sys.argv[1] == "--help":
         tool_name = sys.argv[0][sys.argv[0].rfind("/")+1:]
         print((
+            "usage: {} configure <file>".format(tool_name) + "\n"
             "usage: {} <DOI_GROUP> [options...]".format(tool_name) + "\n"
             "usage: {} --help".format(tool_name) + "\n"
             "usage: {} --show-doi-groups".format(tool_name) + "\n"
             "\n"
             "required\n"
+            "file            configure the tool from entries in <file>\n"
+            "                file 'local_settings.py' is created\n"
             "DOI_GROUP       doi group for which to get citation statistics\n"
             "                (see --show-doi-groups)\n"
             "\n"
