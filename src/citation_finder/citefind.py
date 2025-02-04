@@ -1,6 +1,9 @@
 import sys
 
 
+from .configure import configure
+
+
 def main():
     if len(sys.argv[1:]) == 0 or sys.argv[1] == "--help":
         tool_name = sys.argv[0][sys.argv[0].rfind("/")+1:]
