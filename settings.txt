@@ -1,0 +1,37 @@
+#
+# replace angle-bracketed tokens with real values
+#
+# a line with '!' in the first column is optional and will only be processed if
+#    the angle-bracketed token has been replaced
+#
+temporary_directory_path = <path>
+default_asset_type = <type>
+#
+citation_database_username = <username>
+citation_database_password = <password>
+citation_database_host = <host>
+citation_database_dbname = <dbname>
+citation_database_schemaname = <schemaname>
+#
+# services are the metadata services that can be queried to find citations
+# service fields can be repeated for multiple services
+service_id = <id>
+service_longname = <longname>
+service_title = <title>
+service_api_url = <url>
+service_api_key = <api_key>
+#
+# doi groups are the umbrellas for the different lists of DOIs to track
+# doi group fields can be repeated for multiple groups
+# doi_group_doi_query must be ONE of the options; if both specified, then 'db'
+#    takes precedence
+doi_group_id = <id>
+doi_group_publisher = <publisher_string>
+doi_group_db_table = <db_table_name_for_citations>
+!doi_group_doi_query = db:<db_select_statement>
+!doi_group_doi_query = api:<api_url>
+!doi_group_api_response_doi_list = <api_response_jsonpath_dot_notation>
+!doi_group_api_response_publisher = <api_response_jsonpath_dot_notation>
+!doi_group_api_response_asset_type = <api_response_jsonpath_dot_notation>
+!doi_group_api_pagination_page_count = <api_response_jsonpath_dot_notation>
+!doi_group_api_pagination_page_number = <api_query_parameter>
