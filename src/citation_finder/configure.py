@@ -4,7 +4,7 @@ import sys
 
 def configure(settings_file):
     print("Creating 'local_settings.py' ...")
-    with open(settfiles_file, "r") as f:
+    with open(settings_file, "r") as f:
         lines = f.read().splitlines()
 
     for line in lines:
