@@ -38,7 +38,11 @@ def main():
 
     args = sys.argv[1:]
     if args[0] == "configure":
-        configure(args[1])
+        del args[0]
+        if len(args) == 0:
+            raise ValueError("missing input settings file name")
+
+        configure(args[0])
 
 
 if __name__ == "__main__":
