@@ -1,7 +1,16 @@
 import sys
 
-
 from .configure import configure
+
+
+def on_crash(exctype, value, traceback):
+    if DEBUG:
+        sys.__excepthook__(exctype, value, traceback)
+    else:
+        print("{}: {}".format(exctype.__name__, value))
+
+
+sys.excepthook = on_crash
 
 
 def main():
@@ -36,6 +45,8 @@ def main():
         ))
         sys.exit(1)
 
+    global DEBUG
+    DEBUG = False
     args = sys.argv[1:]
     if args[0] == "configure":
         del args[0]
