@@ -36,6 +36,10 @@ def main():
         ))
         sys.exit(1)
 
+    args = sys.argv[1:]
+    if args[0] == "configure":
+        configure(args[1])
+
 
 if __name__ == "__main__":
     main()
