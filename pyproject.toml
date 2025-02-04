@@ -22,3 +22,6 @@ classifiers = [
 
 [project.scripts]
 citefind = "citation_finder.citefind:main"
+
+[tool.setuptools.package-data]
+citation_finder = ["local_settings.py"]
