@@ -15,7 +15,8 @@ def configure(settings_file):
             elif parts[0] == "default_asset_type":
                 def_asset = parts[1]
 
-    with open(os.path.join(os.path.dirname(__file__), "local_settings.py"), "w") as f:
+    with open(os.path.join(os.path.dirname(__file__), "local_settings.py"),
+              "w") as f:
         f.write("temp_dir = \"" + temp_dir + "\"\n")
         f.write("default_asset_type = \"" + def_asset + "\"\n")
 
