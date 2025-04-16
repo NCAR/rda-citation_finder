@@ -26,12 +26,12 @@ service_api_key = <api_key>
 # doi_group_doi_query must be ONE of the options; if both specified, then 'db'
 #    takes precedence
 doi_group_id = <id>
-doi_group_publisher = <publisher_string>
-doi_group_db_table = <db_table_name_for_citations>
-!doi_group_doi_query = db:<db_select_statement>
-!doi_group_doi_query = api:<api_url>
-!doi_group_api_response_doi_list = <api_response_jsonpath_dot_notation>
-!doi_group_api_response_publisher = <api_response_jsonpath_dot_notation>
-!doi_group_api_response_asset_type = <api_response_jsonpath_dot_notation>
-!doi_group_api_pagination_page_count = <api_response_jsonpath_dot_notation>
-!doi_group_api_pagination_page_number = <api_query_parameter>
+doi_group_publisher = <id>:<publisher_string>
+doi_group_db_table = <id>:<db_table_name_for_citations>
+!doi_group_doi_query = <id>:db:<db_select_statement>
+!doi_group_doi_query = <id>:api:<api_url>
+!doi_group_api_response_doi_list = <id>:<api_response_jsonpath_dot_notation>
+!doi_group_api_response_publisher = <id>:<api_response_jsonpath_dot_notation>
+!doi_group_api_response_asset_type = <id>:<api_response_jsonpath_dot_notation>
+!doi_group_api_pagination_page_count = <id>:<api_response_jsonpath_dot_notation>
+!doi_group_api_pagination_page_number = <id>:<api_query_parameter>
