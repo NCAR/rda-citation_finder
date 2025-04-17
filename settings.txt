@@ -1,20 +1,19 @@
 #
 # replace angle-bracketed tokens with real values
 #
-# a line with '!' in the first column is optional and will only be processed if
-#    the angle-bracketed token has been replaced
-#
 temporary-directory-path = <path>
 default-asset-type = <type>
 #
-citation_database-username = <username>
-citation_database-password = <password>
-citation_database-host = <host>
-citation_database-dbname = <dbname>
-citation_database-schemaname = <schemaname>
+# provide database connection information here
+#
+citation-database_username = <username>
+citation-database_password = <password>
+citation-database_host = <host>
+citation-database_dbname = <dbname>
+citation-database_schemaname = <schemaname>
 #
 # services are the metadata services that can be queried to find citations
-# service fields can be repeated for multiple services
+#    service fields can be repeated for multiple services
 service_id = <id>
 service_longname = <id>:<longname>
 service_title = <id>:<title>
@@ -23,15 +22,27 @@ service_api-key = <id>:<api_key>
 #
 # doi groups are the umbrellas for the different lists of DOIs to track
 # doi group fields can be repeated for multiple groups
-# doi_group_doi_query must be ONE of the options; if both specified, then 'db'
-#    takes precedence
-doi_group-id = <id>
-doi_group-publisher = <id>:<publisher_string>
-doi_group-db-table = <id>:<citation_database_table_name>
-!doi_group-doi-query = <id>:db:<db_select_statement>
-!doi_group-doi-query = <id>:api:<api_url>
-!doi_group-api-response-doi-list = <id>:<api_response_jsonpath_dot_notation>
-!doi_group-api-response-publisher = <id>:<api_response_jsonpath_dot_notation>
-!doi_group-api-response-asset-type = <id>:<api_response_jsonpath_dot_notation>
-!doi_group-api-pagination-page-count = <id>:<api_response_jsonpath_dot_notation>
-!doi_group-api-pagination-page-number = <id>:<api_query_parameter>
+doi-group_id = <id>
+doi-group_publisher = <id>:<publisher_string>
+doi-group_db-table = <id>:<citation_database_table_name>
+#
+# the doi query is the method for obtaining the list of DOIs for the doi group
+# there must be ONE doi query for each doi group; if both are specified, then
+#    doi-query_db takes precedence
+#
+doi-query_db = <doi_group_id>:<db_select_statement>
+doi-query_api = <doi_group_id>:<api_url>
+#
+# the api response is used to specify the JSON paths in the response for the
+#    DOI, publisher, and asset type
+#
+api-response_doi = <doi_group_id>:<api_response_jsonpath_dot_notation>
+api-response_publisher = <doi_group_id>:<api_response_jsonpath_dot_notation>
+api-response_asset-type = <doi_group_id>:<api_response_jsonpath_dot_notation>
+#
+# api pagination provides the JSON path to the page count and the query
+#    parameter used to specify the page number being requested when the list
+#    of DOIs spans multiple pages
+#
+api-pagination_page-count = <doi_group_id>:<api_response_jsonpath_dot_notation>
+api-pagination_page-number = <doi_group_id>:<api_query_parameter>
