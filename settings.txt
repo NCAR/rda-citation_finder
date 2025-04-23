@@ -6,7 +6,7 @@ default-asset-type = <type>
 #
 # provide database connection information here
 #
-citation-database_username = <username>
+citation-database_user = <username>
 citation-database_password = <password>
 citation-database_host = <host>
 citation-database_dbname = <dbname>
