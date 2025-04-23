@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "citation_finder"
-version = "1.0.0"
+version = "1.0.1"
 authors = [
     {name = "Bob Dattore", email = "dattore@ucar.edu"},
 ]
@@ -22,6 +22,7 @@ classifiers = [
 
 [project.scripts]
 citefind = "citation_finder.citefind:main"
+gscholar = "citation_finder.gscholar:main"
 
 [tool.setuptools.package-data]
 citation_finder = ["local_settings.py"]
