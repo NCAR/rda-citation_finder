@@ -9,7 +9,7 @@ def configure(settings_file):
         'temporary-directory-path': "",
         'default-asset-type': "",
         'citation-database': {
-            'username': "",
+            'user': "",
             'password': "",
             'host': "",
             'dbname': "",
