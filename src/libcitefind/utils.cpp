@@ -103,7 +103,7 @@ void regenerate_dataset_descriptions(string whence) {
     g_mail_message << "\nFound " << r[1] << " new " << whence << " data "
         "citations for " << r[0] << endl;
     stringstream oss, ess;
-    mysystem2("/bin/tcsh -c \"dsgen " + r[0].substr(2) + "\"", oss, ess);
+    mysystem2("/bin/tcsh -c \"dsgen " + r[0] + "\"", oss, ess);
     if (!ess.str().empty()) {
       append(myerror, "Error while regenerating " + r[0] + " (" + whence + "):"
           "\n  " + ess.str(), "\n");
