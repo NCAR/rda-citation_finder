@@ -3,6 +3,7 @@ import os
 import psycopg2
 import requests
 import string
+import subprocess
 import sys
 
 from .local_settings import config
@@ -24,6 +25,7 @@ def clean_word(word):
            not in string.digits):
         word = word[0:-1]
 
+    word = word.replace("/", "%2f")
     return word
 
 
@@ -57,6 +59,7 @@ def process_id(asset_id, cursor):
                        (asset_id, ))
         asset_title, = cursor.fetchone()
         query_terms = build_terms(asset_title, asset_type)
+        serp_param = "q"
     else:
         doi = asset_id
         doi_group = None
@@ -69,14 +72,44 @@ def process_id(asset_id, cursor):
         query_terms = build_terms(attrs['titles'][0]['title'], asset_type)
         query_terms.extend(
                 [author['familyName'] for author in attrs['creators']])
-        query_terms.extend([attrs['publicationYear'], "ucar"])
+        query_terms.extend([str(attrs['publicationYear']), "ucar"])
         if attrs['publisher'].find("Earth Observing") > 0:
             doi_group = "eol"
             query_terms.append(asset_id)
         else:
             doi_group = "ucar"
 
-    return (doi, doi_group, asset_type, query_terms)
+        if asset_type == "text":
+            print(config['services']['gscholar']['api-url'] + "?engine=google_scholar&q=" + ("+").join(query_terms) + "&api_key=" + config['services']['gscholar']['api-key'])
+            serp_param = "cites"
+        else:
+            serp_param = "q"
+
+    return (doi, doi_group, asset_type, serp_param, query_terms)
+
+
+def start_translation_server():
+    o = subprocess.run(("/bin/tcsh -c 'module load podman; podman image pull "
+                        "-q docker://zotero/translation-server > /dev/null; "
+                        "podman run -d -p 1969:1969 "
+                        "zotero/translation-server'"), shell=True,
+                       capture_output=True)
+    if o.returncode == 0:
+        return o.stdout.decode("utf-8")[0:12]
+    else:
+        print(("Error starting translation server: '{}'")
+              .format(o.stderr.decode("utf-8")))
+        sys.exit(1)
+
+
+def check_for_translation_server():
+    o = subprocess.run(("/bin/tcsh -c 'module load podman; podman ps |grep "
+                        """"zotero/translation-server"'"""), shell=True,
+                       capture_output=True)
+    if o.returncode == 0:
+        return o.stdout.decode("utf-8")[0:12]
+    else:
+        return start_translation_server()
 
 
 def main():
@@ -93,21 +126,57 @@ def main():
 
     asset_id = sys.argv[-1]
     if len(sys.argv) == 4 and sys.argv[2] == "-n":
-        max_pages = int(sys.argv[3])
+        MAX_PAGES = int(sys.argv[3])
     else:
-        max_pages = 0x7fffffff
+        MAX_PAGES = 1e10
 
     try:
         db_config = {k: v for k, v in config['citation-database'].items() if
                      k != "schemaname"}
         conn = psycopg2.connect(**db_config)
         cursor = conn.cursor()
-        doi, doi_group, asset_type, qterms = process_id(asset_id, cursor)
+        doi, doi_group, asset_type, serp_param, qterms = (
+                process_id(asset_id, cursor))
         print(", ".join([doi, str(doi_group), asset_type, str(qterms)]))
         print(config['doi-groups'][doi_group]['db-table'])
+        print(config)
+        print(serp_param)
+        current_page = 0
+        num_pages = MAX_PAGES
+        while current_page < num_pages:
+            resp = json.loads(
+                    requests.get((
+                            config['services']['gscholar']['api-url'] +
+                            "?engine=google_scholar&" + serp_param + "=" +
+                            qterms + "&api_key=" +
+                            config['services']['gscholar']['api-key'] +
+                            "&num=20&start = " + str(current_page * 20)),
+                                  asset_id).content)
+            if current_page == 0:
+                num_results = resp['search_information']['total_results']
+                num_pages = (num_results + 20) / 20
+
+            for res in resp['organic_results']:
+                pass
+
+            podman_id = check_for_translation_server()
+            if ('serpapi_pagination' in resp and 'next' in
+                    resp['serpapi_pagination']):
+                current_page += 1
+            else:
+                current_page = MAX_PAGES
+
+            if current_page >= MAX_PAGES:
+                break
+
     finally:
         if 'conn' in locals():
             conn.close()
+
+        if 'podman_id' in locals():
+            subprocess.run((
+                    "/bin/tcsh -c 'module load podman; podman kill " +
+                    podman_id + "'"), shell=True)
 
 
 if __name__ == "__main__":
