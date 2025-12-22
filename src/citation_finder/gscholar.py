@@ -92,7 +92,7 @@ def start_translation_server():
     o = subprocess.run(("/bin/tcsh -c 'module load podman; podman image pull "
                         "-q docker://zotero/translation-server:2.0.4 > "
                         "/dev/null; podman run -d -p 1969:1969 "
-                        "zotero/translation-server'"), shell=True,
+                        "zotero/translation-server:2.0.4'"), shell=True,
                        capture_output=True)
     if o.returncode == 0:
         return o.stdout.decode("utf-8")[0:12]
