@@ -90,8 +90,8 @@ def process_id(asset_id, cursor):
 
 def start_translation_server():
     o = subprocess.run(("/bin/tcsh -c 'module load podman; podman image pull "
-                        "-q docker://zotero/translation-server > /dev/null; "
-                        "podman run -d -p 1969:1969 "
+                        "-q docker://zotero/translation-server:2.0.4 > "
+                        "/dev/null; podman run -d -p 1969:1969 "
                         "zotero/translation-server'"), shell=True,
                        capture_output=True)
     if o.returncode == 0:
