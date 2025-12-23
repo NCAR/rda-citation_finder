@@ -112,6 +112,14 @@ def check_for_translation_server():
         return start_translation_server()
 
 
+def do_translation():
+    pass
+
+
+def translation(url):
+    return None
+
+
 def main():
     if len(sys.argv) < 2:
         tool_name = sys.argv[0][sys.argv[0].rfind("/")+1:]
@@ -156,10 +164,20 @@ def main():
                 num_results = resp['search_information']['total_results']
                 num_pages = (num_results + 20) / 20
 
+            links = []
             for res in resp['organic_results']:
-                pass
+                if 'link' in res:
+                    links.append(res['link'])
+                else:
+                    print(("*** NO LINK for '{}' ({}:{})")
+                          .format(res['title'], qterms, res['position']))
 
             podman_id = check_for_translation_server()
+            for url in links:
+                work = translation(url)
+                if work is None:
+                    continue
+
             if ('serpapi_pagination' in resp and 'next' in
                     resp['serpapi_pagination']):
                 current_page += 1
