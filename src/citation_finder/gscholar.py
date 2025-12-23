@@ -151,8 +151,8 @@ def main():
         print(config)
         print(serp_param)
         request_base = (config['services']['gscholar']['api-url'] +
-                        "?engine=google_scholar&" + serp_param + "=" + qterms +
-                        "&api_key=" +
+                        "?engine=google_scholar&" + serp_param + "=" +
+                        "+".join(qterms) + "&api_key=" +
                         config['services']['gscholar']['api-key'] +
                         "&num=20&start=")
         current_page = 0
@@ -170,7 +170,7 @@ def main():
                     links.append(res['link'])
                 else:
                     print(("*** NO LINK for '{}' ({}:{})")
-                          .format(res['title'], qterms, res['position']))
+                          .format(res['title'], str(qterms), res['position']))
 
             podman_id = check_for_translation_server()
             for url in links:
