@@ -7,6 +7,7 @@ import subprocess
 import sys
 
 from .local_settings import config
+from multiprocessing import Process
 
 
 ignore_words = {
@@ -149,17 +150,16 @@ def main():
         print(config['doi-groups'][doi_group]['db-table'])
         print(config)
         print(serp_param)
+        request_base = (config['services']['gscholar']['api-url'] +
+                        "?engine=google_scholar&" + serp_param + "=" + qterms +
+                        "&api_key=" +
+                        config['services']['gscholar']['api-key'] +
+                        "&num=20&start=")
         current_page = 0
         num_pages = MAX_PAGES
         while current_page < num_pages:
-            resp = json.loads(
-                    requests.get((
-                            config['services']['gscholar']['api-url'] +
-                            "?engine=google_scholar&" + serp_param + "=" +
-                            qterms + "&api_key=" +
-                            config['services']['gscholar']['api-key'] +
-                            "&num=20&start = " + str(current_page * 20)),
-                                  asset_id).content)
+            resp = json.loads(requests.get(request_base +
+                                           str(current_page*20)).content)
             if current_page == 0:
                 num_results = resp['search_information']['total_results']
                 num_pages = (num_results + 20) / 20
