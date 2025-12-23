@@ -60,6 +60,8 @@ def process_id(asset_id, cursor):
                        (asset_id, ))
         asset_title, = cursor.fetchone()
         query_terms = build_terms(asset_title, asset_type)
+        query_terms.extend(["ucar", asset_id, "ds" + asset_id[1:4] + "." +
+                            asset_id[6]])
         serp_param = "q"
     else:
         doi = asset_id
