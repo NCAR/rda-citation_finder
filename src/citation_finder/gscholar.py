@@ -7,6 +7,7 @@ import subprocess
 import sys
 
 from .local_settings import config
+from datetime import datetime, timedelta
 from multiprocessing import Process
 
 
@@ -115,12 +116,29 @@ def check_for_translation_server():
         return start_translation_server()
 
 
-def do_translation():
+def do_translation(url):
     pass
 
 
+RESET_ERROR = "Connection reset by peer"
+
+
 def translation(url):
-    return None
+    data = {'error': RESET_ERROR}
+    num_try = 0
+    while num_try < 5 and data['error'].find(RESET_ERROR) >= 0:
+        p = Process(target=do_translation, args=(url, data))
+        p.start()
+        max_time = datetime.now() + timedelta(seconds=15)
+        while datetime.now() < max_time:
+            if not p.is_alive():
+                break
+
+        if p.is_alive():
+            p.kill()
+            data = None
+
+    return data
 
 
 def main():
