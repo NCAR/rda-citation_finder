@@ -5,6 +5,7 @@ import requests
 import string
 import subprocess
 import sys
+import time
 
 from .local_settings import config
 from datetime import datetime, timedelta
@@ -100,6 +101,8 @@ def start_translation_server():
                         "dattore/translation-server'"),
                        shell=True, capture_output=True)
     if o.returncode == 0:
+        # give the container time to run its startup script
+        time.sleep(15)
         return o.stdout.decode("utf-8")[0:12]
     else:
         print(("Error starting translation server: '{}'")
