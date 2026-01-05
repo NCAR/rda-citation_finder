@@ -117,8 +117,15 @@ def check_for_translation_server():
         return start_translation_server()
 
 
-def do_translation(url):
-    pass
+def do_translation(url, data):
+    try:
+        data = json.loads(
+                requests.post(
+                        "http://127.0.0.1:1969/web",
+                        data=url,
+                        headers={'Content-type': "text/plain"}).content)
+    except Exception:
+        pass
 
 
 RESET_ERROR = "Connection reset by peer"
@@ -137,8 +144,17 @@ def translation(url):
 
         if p.is_alive():
             p.kill()
+            print("TIMEOUT trying to translate URL '{}'".format(url))
             data = None
+            break
 
+        num_try += 1
+
+    if 'error' in data:
+        print("Error: failed to translate URL '{}'".format(url))
+
+    print(num_try)
+    print(data)
     return data
 
 
