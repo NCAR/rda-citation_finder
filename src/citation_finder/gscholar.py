@@ -181,7 +181,7 @@ def main():
         while current_page < num_pages:
             #resp = json.loads(requests.get(request_base +
             #                               str(current_page*20)).content)
-            resp = json.loads('{"organic_results": [{"links": "https://hess.copernicus.org/articles/21/707/2017/"}], "search_information": {"total_results": 1}, "serpapi_pagination": {"next": 2}}')
+            resp = json.loads('{"organic_results": [{"link": "https://hess.copernicus.org/articles/21/707/2017/"}], "search_information": {"total_results": 1}, "serpapi_pagination": {"next": 2}}')
             if current_page == 0:
                 num_results = resp['search_information']['total_results']
                 num_pages = (num_results + 20) / 20
