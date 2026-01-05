@@ -200,7 +200,7 @@ def main():
             resp = json.loads('{"organic_results": [{"link": "https://hess.copernicus.org/articles/21/707/2017/"}], "search_information": {"total_results": 1}, "serpapi_pagination": {"next": 2}}')
             if current_page == 0:
                 num_results = resp['search_information']['total_results']
-                num_pages = (num_results + 20) / 20
+                num_pages = int((num_results + 20) / 20)
 
             links = []
             for res in resp['organic_results']:
