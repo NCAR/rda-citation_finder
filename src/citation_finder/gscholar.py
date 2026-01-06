@@ -160,6 +160,10 @@ def translation(url):
     return data
 
 
+def insert_citation(translation):
+    pass
+
+
 def main():
     if len(sys.argv) < 2:
         tool_name = sys.argv[0][sys.argv[0].rfind("/")+1:]
@@ -230,6 +234,7 @@ def main():
                     continue
 
                 print("WORK DOI: " + work_doi)
+                insert_citation(work['translation'])
 
             if ('serpapi_pagination' in resp and 'next' in
                     resp['serpapi_pagination']):
