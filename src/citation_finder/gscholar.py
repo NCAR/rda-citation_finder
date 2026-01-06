@@ -9,7 +9,7 @@ import time
 
 from .local_settings import config
 from datetime import datetime, timedelta
-from multiprocessing import Process
+from multiprocessing import Manager, Process
 
 
 ignore_words = {
@@ -122,22 +122,21 @@ def check_for_translation_server():
 
 def do_translation(url, data):
     try:
-        data = json.loads(
+        data['translation'] = json.loads(
                 requests.post(
                         "http://127.0.0.1:1969/web",
                         data=url,
-                        headers={'Content-type': "text/plain"}).content)
-    except Exception:
-        pass
-
-
-RESET_ERROR = "Connection reset by peer"
+                        headers={'Content-type': "text/plain"}).content)[0]
+        del data['error']
+    except Exception as e:
+        data['error'] = e
 
 
 def translation(url):
-    data = {'error': RESET_ERROR}
+    manager = Manager()
+    data = manager.dict({'error': "", 'translation': {}})
     num_try = 0
-    while num_try < 5 and data['error'].find(RESET_ERROR) >= 0:
+    while num_try < 5 and 'error' in data:
         p = Process(target=do_translation, args=(url, data))
         p.start()
         max_time = datetime.now() + timedelta(seconds=15)
@@ -154,7 +153,9 @@ def translation(url):
         num_try += 1
 
     if 'error' in data:
-        print("Error: failed to translate URL '{}'".format(url))
+        print((
+                "Error: failed to translate URL '{}', error: '{}'")
+              .format(url, data['error']))
 
     print(num_try)
     print(data)
