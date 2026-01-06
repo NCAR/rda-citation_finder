@@ -216,8 +216,20 @@ def main():
             for url in links:
                 work = translation(url)
                 print(work)
-                if work is None:
+                if work is None or 'translation' not in work:
                     continue
+
+                work_doi = None
+                if 'DOI' in work['translation']:
+                    work_doi = work['translation']['DOI']
+                elif ('extra' in work['translation'] and
+                      work['translation']['extra'][0:5] == "DOI: "):
+                    work_doi = work['translation']['extra'][5:]
+
+                if work_doi is None:
+                    continue
+
+                print("WORK DOI: " + work_doi)
 
             if ('serpapi_pagination' in resp and 'next' in
                     resp['serpapi_pagination']):
