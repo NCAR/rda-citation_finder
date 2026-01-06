@@ -154,11 +154,9 @@ def translation(url):
 
     if 'error' in data:
         print((
-                "Error: failed to translate URL '{}', error: '{}'")
+              "Error: failed to translate URL '{}', error: '{}'")
               .format(url, data['error']))
 
-    print(num_try)
-    print(data)
     return data
 
 
