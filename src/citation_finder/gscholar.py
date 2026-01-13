@@ -164,7 +164,7 @@ def add_authors_to_db(author_list, ident):
     for author in author_list:
         if (ident[0] == "DOI" and author['creatorType'] == "author" or
                 ident[0] == "ISBN" and author['creatorType'] == "editor"):
-            print(author['firstName'] + " " + author['lastName'])
+            print(bytes(author['firstName'], "utf-8") + bytes(" ", "utf-8") + bytes(author['lastName'], "utf-8"))
 
 
 def insert_citation(translation):
@@ -221,7 +221,7 @@ def main():
         while current_page < num_pages:
             #resp = json.loads(requests.get(request_base +
             #                               str(current_page*20)).content)
-            resp = json.loads('{"organic_results": [{"link": "https://hess.copernicus.org/articles/21/707/2017/"}, {"link": "https://repository.library.noaa.gov/view/noaa/29968/noaa_29968_DS1.pdf#page=36"}], "search_information": {"total_results": 1}, "serpapi_pagination": {"next": 2}}')
+            resp = json.loads('{"organic_results": [{"link": "https://hess.copernicus.org/articles/21/707/2017/"}, {"link": "https://hess.copernicus.org/articles/28/2375/2024/"}], "search_information": {"total_results": 1}, "serpapi_pagination": {"next": 2}}')
             if current_page == 0:
                 num_results = resp['search_information']['total_results']
                 num_pages = int((num_results + 20) / 20)
