@@ -160,8 +160,26 @@ def translation(url):
     return data
 
 
+def add_authors_to_db(author_list, ident):
+    for author in author_list:
+        if (ident[0] == "DOI" and author['creatorType'] == "author" or
+                ident[0] == "ISBN" and author['creatorType'] == "editor"):
+            print(author['firstName'] + " " + author['lastName'])
+
+
 def insert_citation(translation):
-    pass
+    work_doi = None
+    if 'DOI' in translation:
+        work_doi = translation['DOI']
+    elif ('extra' in translation and
+          translation['extra'][0:5] == "DOI: "):
+        work_doi = translation['extra'][5:]
+
+    if work_doi is None:
+        return
+
+    print("WORK DOI: " + work_doi)
+    add_authors_to_db(translation['creators'], ("DOI", work_doi))
 
 
 def main():
@@ -203,7 +221,7 @@ def main():
         while current_page < num_pages:
             #resp = json.loads(requests.get(request_base +
             #                               str(current_page*20)).content)
-            resp = json.loads('{"organic_results": [{"link": "https://hess.copernicus.org/articles/21/707/2017/"}], "search_information": {"total_results": 1}, "serpapi_pagination": {"next": 2}}')
+            resp = json.loads('{"organic_results": [{"link": "https://hess.copernicus.org/articles/21/707/2017/"}, {"link": "https://repository.library.noaa.gov/view/noaa/29968/noaa_29968_DS1.pdf#page=36"}], "search_information": {"total_results": 1}, "serpapi_pagination": {"next": 2}}')
             if current_page == 0:
                 num_results = resp['search_information']['total_results']
                 num_pages = int((num_results + 20) / 20)
@@ -223,17 +241,6 @@ def main():
                 if work is None or 'translation' not in work:
                     continue
 
-                work_doi = None
-                if 'DOI' in work['translation']:
-                    work_doi = work['translation']['DOI']
-                elif ('extra' in work['translation'] and
-                      work['translation']['extra'][0:5] == "DOI: "):
-                    work_doi = work['translation']['extra'][5:]
-
-                if work_doi is None:
-                    continue
-
-                print("WORK DOI: " + work_doi)
                 insert_citation(work['translation'])
 
             if ('serpapi_pagination' in resp and 'next' in
