@@ -174,13 +174,27 @@ def unicode_escape(s):
 
 def add_authors_to_db(author_list, ident, db_conn):
     cursor = db_conn.cursor()
+    id, id_type = ident
+    seqno = 0
     do_commit = False
     for author in author_list:
-        if (ident[0] == "DOI" and author['creatorType'] == "author" or
-                ident[0] == "ISBN" and author['creatorType'] == "editor"):
+        if (((ident[0] == "DOI" and author['creatorType'] == "author") or
+                (ident[0] == "ISBN" and author['creatorType'] == "editor"))
+                and 'lastName' in author and len(author['lastName']) > 0):
+            parts = author['firstName'].split()
+            fname = unicode_escape(parts[0])
+            if len(parts) > 1:
+                mname = unicode_escape(parts[1])
+            else:
+                mname = ""
+
             do_commit = True
-            cursor.execute("insert into citation.test values (%s, %s, NULL)", (unicode_escape(author['firstName']), unicode_escape(author['lastName'])))
-            print(unicode_escape(author['firstName']) + " " + unicode_escape(author['lastName']))
+            cursor.execute((
+                    "insert into citation.works_authors values (%s, %s, %s, "
+                    "%s, %s, NULL, %s) on conflict do nothing"),
+                    (id, id_type, unicode_escape(author['lastName']),
+                     fname, mname, seqno))
+            seqno += 1
 
     if (do_commit):
         db_conn.commit()
@@ -200,7 +214,7 @@ def insert_citation(translation, db_conn):
         return
 
     print("WORK DOI: " + work_doi)
-    add_authors_to_db(translation['creators'], ("DOI", work_doi), db_conn)
+    add_authors_to_db(translation['creators'], (work_doi, "DOI"), db_conn)
 
 
 def main():
