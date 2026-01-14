@@ -178,8 +178,8 @@ def add_authors_to_db(author_list, ident, db_conn):
     seqno = 0
     do_commit = False
     for author in author_list:
-        if (((ident[0] == "DOI" and author['creatorType'] == "author") or
-                (ident[0] == "ISBN" and author['creatorType'] == "editor"))
+        if (((id_type == "DOI" and author['creatorType'] == "author") or
+                (id_type == "ISBN" and author['creatorType'] == "editor"))
                 and 'lastName' in author and len(author['lastName']) > 0):
             parts = author['firstName'].split()
             fname = unicode_escape(parts[0])
