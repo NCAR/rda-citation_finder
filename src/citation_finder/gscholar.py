@@ -160,14 +160,23 @@ def translation(url):
     return data
 
 
-def add_authors_to_db(author_list, ident):
+def add_authors_to_db(author_list, ident, db_conn):
+    cursor = db_conn.cursor()
+    do_commit = False
     for author in author_list:
         if (ident[0] == "DOI" and author['creatorType'] == "author" or
                 ident[0] == "ISBN" and author['creatorType'] == "editor"):
-            print(bytes(author['firstName'], "utf-8") + bytes(" ", "utf-8") + bytes(author['lastName'], "utf-8"))
+            do_commit = True
+            cursor.execute("insert into citation.test values (%s, %s, NULL)", (author['firstName'], author['lastName']))
+            print(author['firstName'] + " " + author['lastName'])
+
+    if (do_commit):
+        db_conn.commit()
+    else:
+        print("*** NO INSERTABLE AUTHORS for '{}'".format(ident))
 
 
-def insert_citation(translation):
+def insert_citation(translation, db_conn):
     work_doi = None
     if 'DOI' in translation:
         work_doi = translation['DOI']
@@ -179,7 +188,7 @@ def insert_citation(translation):
         return
 
     print("WORK DOI: " + work_doi)
-    add_authors_to_db(translation['creators'], ("DOI", work_doi))
+    add_authors_to_db(translation['creators'], ("DOI", work_doi), db_conn)
 
 
 def main():
@@ -241,7 +250,7 @@ def main():
                 if work is None or 'translation' not in work:
                     continue
 
-                insert_citation(work['translation'])
+                insert_citation(work['translation'], conn)
 
             if ('serpapi_pagination' in resp and 'next' in
                     resp['serpapi_pagination']):
