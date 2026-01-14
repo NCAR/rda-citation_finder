@@ -160,6 +160,18 @@ def translation(url):
     return data
 
 
+def unicode_escape(s):
+    escaped_string = ""
+    for c in s:
+        code = ord(c)
+        if code < 0xff:
+            escaped_string += c
+        else:
+            escaped_string += fr"\u00{code:02x}"
+
+    return escaped_string
+
+
 def add_authors_to_db(author_list, ident, db_conn):
     cursor = db_conn.cursor()
     do_commit = False
@@ -167,8 +179,8 @@ def add_authors_to_db(author_list, ident, db_conn):
         if (ident[0] == "DOI" and author['creatorType'] == "author" or
                 ident[0] == "ISBN" and author['creatorType'] == "editor"):
             do_commit = True
-            cursor.execute("insert into citation.test values (%s, %s, NULL)", (author['firstName'], author['lastName']))
-            print(author['firstName'] + " " + author['lastName'])
+            cursor.execute("insert into citation.test values (%s, %s, NULL)", (unicode_escape(author['firstName']), unicode_escape(author['lastName'])))
+            print(unicode_escape(author['firstName']) + " " + unicode_escape(author['lastName']))
 
     if (do_commit):
         db_conn.commit()
