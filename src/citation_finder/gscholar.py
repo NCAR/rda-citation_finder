@@ -164,7 +164,7 @@ def unicode_escape(s):
     escaped_string = ""
     for c in s:
         code = ord(c)
-        if code < 0xff:
+        if code < 0x80:
             escaped_string += c
         else:
             escaped_string += fr"\u00{code:02x}"
