@@ -134,3 +134,27 @@ def inserted_journal_works_data(works_data, db_conn, service) -> bool:
         return False
 
     return True
+
+
+def inserted_general_works_data(works_data, db_conn, work_type,
+                                service) -> bool:
+    try:
+        cursor = db_conn.cursor()
+        cursor.execute((
+                "insert into citation.works (doi, title, pub_year, type, "
+                "publisher, pub_month) values (%s, %s, %s, %s, %s, %s) on "
+                "conflict on constraint works_pkey do update set title = case "
+                "when length(excluded.title) > length(works.title) then "
+                "excluded.title else works.title end, publisher = case when "
+                "length(excluded.publisher) > length(works.publisher) then "
+                "excluded.publisher else works.publisher end"),
+                (works_data['DOI'], works_data['title'],
+                 works_data['date'][0:4], works_data['date'][5:7], work_type,
+                 works_data['libraryCatalog']))
+    except Exception as err:
+        print("Error while inserting {} work ({}, {}, {}, {}, {}, {}): '{}'"
+              .format(service, works_data['DOI'], works_data['title'],
+                      works_data['date'][0:4], works_data['date'][5:7],
+                      work_type, works_data['libraryCatalog'], str(err)))
+
+    return True
