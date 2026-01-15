@@ -57,7 +57,7 @@ def add_authors_to_db(author_list, ident, db_conn):
         print("*** NO INSERTABLE AUTHORS for '{}'".format(ident))
 
 
-def inserted_book_works_data(works_data, db_conn) -> bool:
+def inserted_book_works_data(works_data, db_conn, service) -> bool:
     try:
         cursor = db_conn.cursor()
         cursor.execute((
@@ -71,13 +71,16 @@ def inserted_book_works_data(works_data, db_conn) -> bool:
             (works_data['ISBN'], works_data['bookTitle'],
              works_data['publisher']))
         db_conn.commit()
-    except Exception:
+    except Exception as err:
+        print("Error while inserting {} book data ({}, {}, {}): '{}'"
+              .format(service, works_data['ISBN'], works_data['bookTitle'],
+                      works_data['publisher'], str(err)))
         return False
 
     return True
 
 
-def inserted_book_chapter_works_data(works_data, db_conn) -> bool:
+def inserted_book_chapter_works_data(works_data, db_conn, service) -> bool:
     try:
         cursor = db_conn.cursor()
         add_authors_to_db(works_data['creators'], (works_data['ISBN'], "ISBN"),
@@ -92,16 +95,20 @@ def inserted_book_chapter_works_data(works_data, db_conn) -> bool:
             "isbn else book_chapter_works.isbn end"),
             (works_data['DOI'], works_data['pages'], works_data['ISBN']))
         db_conn.commit()
-        if not inserted_book_works_data(works_data, db_conn):
+        if not inserted_book_works_data(works_data, db_conn, service):
             return False
 
-    except Exception:
+    except Exception as err:
+        print("Error while inserting {} book chapter data ({}, {}, {}): '{}'"
+              .format(service, works_data['DOI'], works_data['pages'],
+                      works_data['ISBN'], str(err)))
         return False
 
     return True
 
 
-def inserted_journal_works_data(works_data, db_conn) -> bool:
+def inserted_journal_works_data(works_data, db_conn, service) -> bool:
+    volume = works_data['volume'] + "(" + works_data['issue'] + ")"
     try:
         cursor = db_conn.cursor()
         cursor.execute((
@@ -116,11 +123,14 @@ def inserted_journal_works_data(works_data, db_conn) -> bool:
                 "journal_works.pages) then excluded.pages else journal_works."
                 "pages end"), (works_data['DOI'],
                                works_data['publicationTitle'],
-                               (works_data['volume'] + "(" +
-                                works_data['issue'] + ")"),
+                               volume,
                                works_data['pages']))
         db_conn.commit()
-    except Exception:
+    except Exception as err:
+        print("Error while inserting {} journal data ({}, {}, {}, {}): '{}'"
+              .format(service, works_data['DOI'],
+                      works_data['publicationTitle'], volume,
+                      works_data['pages'], str(err)))
         return False
 
     return True
