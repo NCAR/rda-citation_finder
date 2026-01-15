@@ -173,7 +173,7 @@ def add_work_to_db(works_data, db_conn):
         type_code = "J"
 
     if (type_code is not None and not
-            utils.inserted_general_works_data(works_data, db_conn,
+            utils.inserted_general_works_data(works_data, db_conn, type_code,
                                               "GoogleScholar")):
         type_code = None
 
