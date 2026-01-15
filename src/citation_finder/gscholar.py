@@ -163,7 +163,6 @@ def translation(url):
 
 def add_work_to_db(works_data, db_conn):
     type_code = None
-    cursor = db_conn.cursor()
     if (works_data['itemType'] == "bookSection" and
             utils.inserted_book_chapter_works_data(works_data, db_conn,
                                                    "GoogleScholar")):
@@ -173,13 +172,15 @@ def add_work_to_db(works_data, db_conn):
                                               "GoogleScholar")):
         type_code = "J"
 
-    if type_code is not None:
-        pass
+    if (type_code is not None and not
+            utils.inserted_general_works_data(works_data, db_conn,
+                                              "GoogleScholar")):
+        type_code = None
 
     return type_code
 
 
-def insert_citation(translation, db_conn):
+def insert_citation(url, translation, db_conn):
     work_doi = None
     if 'DOI' in translation:
         work_doi = translation['DOI']
@@ -194,6 +195,9 @@ def insert_citation(translation, db_conn):
     utils.add_authors_to_db(translation['creators'], (work_doi, "DOI"),
                             db_conn)
     type_code = add_work_to_db(translation, db_conn)
+    if type_code is None:
+        print("UNRECOGNIZED WORKS TYPE: '{}, URL:'{}'"
+              .format(translation['itemType'], url))
 
 
 def main():
@@ -255,7 +259,7 @@ def main():
                 if work is None or 'translation' not in work:
                     continue
 
-                insert_citation(work['translation'], conn)
+                insert_citation(url, work['translation'], conn)
 
             if ('serpapi_pagination' in resp and 'next' in
                     resp['serpapi_pagination']):
