@@ -165,10 +165,12 @@ def add_work_to_db(works_data, db_conn):
     type_code = None
     cursor = db_conn.cursor()
     if (works_data['itemType'] == "bookSection" and
-            utils.inserted_book_chapter_works_data(works_data, db_conn)):
+            utils.inserted_book_chapter_works_data(works_data, db_conn,
+                                                   "GoogleScholar")):
         type_code = "C"
     elif (works_data['itemType'] == "journalArticle" and
-            utils.inserted_journal_works_data(works_data, db_conn)):
+            utils.inserted_journal_works_data(works_data, db_conn,
+                                              "GoogleScholar")):
         type_code = "J"
 
     if type_code is not None:
