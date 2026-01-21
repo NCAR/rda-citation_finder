@@ -161,8 +161,14 @@ def inserted_general_works_data(works_data, db_conn, work_type,
 
 
 def inserted_citation(data_doi, insert_table, db_conn, service) -> bool:
+    try:
+    except Exception as err:
+        print("Error while inserting {} citation ({}, {}): '{}'"
+              .format(service, data_doi, work_doi, str(err)))
+        return False
+
     return True
 
 
-def insert_source(data_doi, db_conn, service):
+def insert_source(data_doi, work_doi, db_conn, service):
     pass
