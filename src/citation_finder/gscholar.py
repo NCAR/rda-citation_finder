@@ -180,7 +180,7 @@ def add_work_to_db(works_data, db_conn):
     return type_code
 
 
-def insert_citation(url, translation, db_conn):
+def insert_citation(url, translation, data_doi, db_conn):
     work_doi = None
     if 'DOI' in translation:
         work_doi = translation['DOI']
@@ -198,6 +198,13 @@ def insert_citation(url, translation, db_conn):
     if type_code is None:
         print("UNRECOGNIZED WORKS TYPE: '{}, URL:'{}'"
               .format(translation['itemType'], url))
+        return
+
+    # insert citation
+    if not utils.inserted_citation(data_doi, db_conn):
+        return
+    # insert source
+    utils.insert_source(data_doi, db_conn)
 
 
 def main():
@@ -259,7 +266,7 @@ def main():
                 if work is None or 'translation' not in work:
                     continue
 
-                insert_citation(url, work['translation'], conn)
+                insert_citation(url, work['translation'], doi, conn)
 
             if ('serpapi_pagination' in resp and 'next' in
                     resp['serpapi_pagination']):
