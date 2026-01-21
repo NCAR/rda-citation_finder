@@ -151,6 +151,7 @@ def inserted_general_works_data(works_data, db_conn, work_type,
                 (works_data['DOI'], works_data['title'],
                  works_data['date'][0:4], works_data['date'][5:7], work_type,
                  works_data['libraryCatalog']))
+        db_conn.commit()
     except Exception as err:
         print("Error while inserting {} work ({}, {}, {}, {}, {}, {}): '{}'"
               .format(service, works_data['DOI'], works_data['title'],
@@ -160,8 +161,16 @@ def inserted_general_works_data(works_data, db_conn, work_type,
     return True
 
 
-def inserted_citation(data_doi, insert_table, db_conn, service) -> bool:
+def inserted_citation(data_doi, work_doi, insert_table, db_conn,
+                      service) -> bool:
     try:
+        cursor = db_conn.cursor()
+        cursor.execute((
+                "insert into citation." + insert_table + " (doi_data, "
+                "doi_work, new_flag) values (%s, %s, '1') on conflict on "
+                "constraint(doi_data, doi_work) do nothing"),
+                (data_doi, work_doi))
+        db_conn.commit()
     except Exception as err:
         print("Error while inserting {} citation ({}, {}): '{}'"
               .format(service, data_doi, work_doi, str(err)))
@@ -171,4 +180,13 @@ def inserted_citation(data_doi, insert_table, db_conn, service) -> bool:
 
 
 def insert_source(data_doi, work_doi, db_conn, service):
-    pass
+    try:
+        cursor = db_conn.cursor()
+        cursor.execute((
+                "insert into citation.sources (doi_work, doi_data, source) "
+                "values (%s, %s, %s) on conflict on constraint sources_pkey "
+                "do nothing"), (data_doi, work_doi, service))
+        db_conn.commit()
+    except Exception as err:
+        print("Error updating {} source for ({}, {}): '{}'"
+              .format(service, data_doi, work_doi, str(err)))
