@@ -201,10 +201,11 @@ def insert_citation(url, translation, data_doi, insert_table, db_conn):
         return
 
     # insert citation
-    if not utils.inserted_citation(data_doi, insert_table, db_conn):
+    if not utils.inserted_citation(data_doi, insert_table, db_conn,
+                                   "GoogleScholar"):
         return
     # insert source
-    utils.insert_source(data_doi, db_conn)
+    utils.insert_source(data_doi, db_conn, "GoogleScholar")
 
 
 def main():
