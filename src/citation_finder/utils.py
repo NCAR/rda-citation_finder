@@ -160,9 +160,9 @@ def inserted_general_works_data(works_data, db_conn, work_type,
     return True
 
 
-def inserted_citation(data_doi, insert_table, db_conn) -> bool:
+def inserted_citation(data_doi, insert_table, db_conn, service) -> bool:
     return True
 
 
-def insert_source(data_doi, db_conn):
+def insert_source(data_doi, db_conn, service):
     pass
