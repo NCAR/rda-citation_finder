@@ -7,7 +7,7 @@ def on_crash(exctype, value, traceback):
     if DEBUG:
         sys.__excepthook__(exctype, value, traceback)
     else:
-        print("{}: {}".format(exctype.__name__, value))
+        print(f"{exctype.__name__}: {value}")
 
 
 sys.excepthook = on_crash
@@ -17,10 +17,10 @@ def main():
     if len(sys.argv[1:]) == 0 or sys.argv[1] == "--help":
         tool_name = sys.argv[0][sys.argv[0].rfind("/")+1:]
         print((
-            "usage: {} configure <file>".format(tool_name) + "\n"
-            "usage: {} <DOI_GROUP> [options...]".format(tool_name) + "\n"
-            "usage: {} --help".format(tool_name) + "\n"
-            "usage: {} --show-doi-groups".format(tool_name) + "\n"
+            f"usage: {tool_name} configure <file>\n"
+            f"usage: {tool_name} <DOI_GROUP> [options...]\n"
+            f"usage: {tool_name} --help\n"
+            f"usage: {tool_name} --show-doi-groups\n"
             "\n"
             "required:\n"
             "file            configure the tool from entries in <file>\n"
