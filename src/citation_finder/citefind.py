@@ -67,6 +67,17 @@ def main():
                 f"missing configuration - run {tool_name} in 'configure' "
                 "mode"))
 
+    if args[0] == "--show-doi-groups":
+        x = 0
+        for key in config['doi-groups'].keys():
+            x = max(x, len(key))
+
+        x += 2
+        for key, value in config['doi-groups'].items():
+            print(f"{key:>{x}}: ({value['publisher']})")
+
+        sys.exit(0)
+
 
 if __name__ == "__main__":
     main()
