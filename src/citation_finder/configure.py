@@ -1,7 +1,6 @@
 import copy
 import json
 import os
-import sys
 
 
 def configure(settings_file):
@@ -129,4 +128,3 @@ def configure(settings_file):
         f.write("config = " + json.dumps(config, indent=4) + "\n")
 
     print("... done.")
-    sys.exit(0)

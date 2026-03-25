@@ -60,6 +60,7 @@ def main():
             raise ValueError("missing input settings file name")
 
         configure(args[0])
+        sys.exit(0)
 
     if len(config) == 0:
         raise ValueError((
