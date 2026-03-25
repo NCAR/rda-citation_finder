@@ -1,6 +1,7 @@
 import sys
 
 from .configure import configure
+from .local_settings import config
 
 
 def on_crash(exctype, value, traceback):
@@ -59,6 +60,11 @@ def main():
             raise ValueError("missing input settings file name")
 
         configure(args[0])
+
+    if len(config) == 0:
+        raise ValueError((
+                f"missing configuration - run {tool_name} in 'configure' "
+                "mode"))
 
 
 if __name__ == "__main__":
