@@ -15,8 +15,8 @@ sys.excepthook = on_crash
 
 
 def main():
+    tool_name = sys.argv[0][sys.argv[0].rfind("/")+1:]
     if len(sys.argv[1:]) == 0 or sys.argv[1] == "--help":
-        tool_name = sys.argv[0][sys.argv[0].rfind("/")+1:]
         print((
             f"usage: {tool_name} configure <file>\n"
             f"usage: {tool_name} <DOI_GROUP> [options...]\n"
