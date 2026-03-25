@@ -1,5 +1,6 @@
 import sys
 
+from .cache import clean_cache
 from .configure import configure
 from .local_settings import config
 
@@ -77,6 +78,8 @@ def main():
             print(f"{key:>{x}}: ({value['publisher']})")
 
         sys.exit(0)
+
+    clean_cache()
 
 
 if __name__ == "__main__":
