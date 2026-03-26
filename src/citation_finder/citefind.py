@@ -95,6 +95,7 @@ def main():
                 f"create table if not exists {db['schemaname']}."
                 f"{config['doi-groups'][doi_group]['db-table']} (like "
                 f"{db['schemaname']}.template_data_citations including all)"))
+        conn.commit()
     except Exception as err:
         print(f"Database error: '{err}'")
     finally:
