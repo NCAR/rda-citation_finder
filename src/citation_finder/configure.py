@@ -124,11 +124,6 @@ def configure(settings_file):
                                [kparts[0][4:]][kparts[1]]) = value
 
     with open(os.path.join(os.path.dirname(__file__), "local_settings.py"),
-              "r") as f:
-        lines = f.readlines()
-
-    del lines[-1]
-    with open(os.path.join(os.path.dirname(__file__), "local_settings.py"),
               "w") as f:
         for line in lines:
             f.write(line)
