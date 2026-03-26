@@ -18,6 +18,23 @@ def get_doi_list_from_db(doi_group):
 
 def get_doi_list_from_api(doi_group):
     doi_list = []
+    api = config['doi-groups'][doi_group]['doi-query']['api']
+    base_url = api['url']
+    page_count = 1
+    page_number = 1
+    while page_number <= page_count:
+        url = base_url
+        if 'pagination' in api and 'page-number' in api['pagination']:
+            if url.find("?") < 0:
+                url += "?"
+            else:
+                url += "&"
+
+            url += f"{api['pagination']['page-number']}={page_number}"
+            page_number += 1
+
+        print(url)
+
     return doi_list
 
 
