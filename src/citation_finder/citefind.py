@@ -3,6 +3,7 @@ import sys
 
 from .cache import clean_cache
 from .configure import configure
+from .doi_list import get_doi_list
 from .local_settings import config
 
 
@@ -101,6 +102,8 @@ def main():
     finally:
         if 'conn' in locals():
             conn.close()
+
+    doi_list = get_doi_list(doi_group)
 
 
 if __name__ == "__main__":
