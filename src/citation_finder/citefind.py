@@ -1,3 +1,4 @@
+import psycopg2
 import sys
 
 from .cache import clean_cache
@@ -80,6 +81,17 @@ def main():
         sys.exit(0)
 
     clean_cache()
+    try:
+        db = config['citation-database']
+        conn = psycopg2.connect(user=db['user'], password=db['password'],
+                                host=db['host'], dbname=db['dbname'],
+                                connect_timeout=30)
+        cursor = conn.cursor()
+    except Exception as err:
+        print(f"Database error: '{err}'")
+    finally:
+        if 'conn' in locals():
+            conn.close()
 
 
 if __name__ == "__main__":
