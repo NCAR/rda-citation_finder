@@ -81,12 +81,20 @@ def main():
         sys.exit(0)
 
     clean_cache()
+    doi_group = args[0]
+    if doi_group not in config['doi-groups']:
+        raise ValueError(f"'{doi_group}' is not a valid doi group")
+
     try:
         db = config['citation-database']
         conn = psycopg2.connect(user=db['user'], password=db['password'],
                                 host=db['host'], dbname=db['dbname'],
                                 connect_timeout=30)
         cursor = conn.cursor()
+        cursor.execute((
+                f"create table if not exists {db['schemaname']}."
+                "{config[doi_group]['db-table']} (like {db['schemaname']}."
+                "template_data_citations including all)"))
     except Exception as err:
         print(f"Database error: '{err}'")
     finally:
