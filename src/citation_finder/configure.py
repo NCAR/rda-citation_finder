@@ -125,9 +125,6 @@ def configure(settings_file):
 
     with open(os.path.join(os.path.dirname(__file__), "local_settings.py"),
               "w") as f:
-        for line in lines:
-            f.write(line)
-
         f.write("config = " + json.dumps(config, indent=4) + "\n")
 
     print("... done.")
