@@ -93,7 +93,7 @@ def main():
         cursor = conn.cursor()
         cursor.execute((
                 f"create table if not exists {db['schemaname']}."
-                "{config[doi_group]['db-table']} (like {db['schemaname']}."
+                f"{config[doi_group]['db-table']} (like {db['schemaname']}."
                 "template_data_citations including all)"))
     except Exception as err:
         print(f"Database error: '{err}'")
