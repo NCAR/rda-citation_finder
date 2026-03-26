@@ -12,7 +12,7 @@ def get_doi_list_from_db(doi_group):
                                 host=db['host'], dbname=db['dbname'])
         cursor = conn.cursor()
         cursor.execute(config['doi-groups'][doi_group]['doi-query']['db'])
-        return [e[0] for e in cursor.fetchall()]
+        return cursor.fetchall()
     finally:
         if 'conn' in locals():
             conn.close()
