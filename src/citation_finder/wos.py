@@ -1,13 +1,30 @@
 import json
+import os
 import requests
+import time
 
 from .local_settings import config
 
 
+def wos_settings():
+    return (config['services']['wos']['api_url'],
+            config['services']['wos']['api-key'])
+
+
+def process_works_id(works_id, **kwargs):
+    api_url, api_key = wos_settings()
+    headers = {'X-ApiKey': api_key}
+    params = {'databaseId': "WOS", 'count': 1, 'firstRecord': 1,
+              'viewField': "identifiers"}
+    if not kwargs['no_works']:
+        params['viewField'] += "+names+titles+pub_info"
+
+    # get the data for each work
+
+
 def do_query(**kwargs):
-    wos = config['services']['wos']
-    api_url = wos['api-url']
-    headers = {'X-ApiKey': wos['api-key']}
+    api_url, api_key = wos_settings()
+    headers = {'X-ApiKey': api_key}
     wos_id_params = {'databaseId': "DCI", 'count': 1, 'firstRecord': 1,
                      'viewField': "none"}
     for doi, publisher, asset_type in kwargs['doi_list']:
@@ -48,3 +65,31 @@ def do_query(**kwargs):
 
         kwargs['output'].write(f"      WoS ID: '{wos_id}'\n")
         # get the WoS IDs for the "works" that have cited this DOI
+        works_ids = []
+        works_id_params = {'databaseId': "WOS", 'uniqueId': wos_id,
+                           'count': 100, 'firstRecord': 1, 'viewField': ""}
+        num_records = 2
+        while works_id_params['firstRecord'] < num_records:
+            time.sleep(0.6)
+            response = requests.get(os.path.join(api_url, "citing"),
+                                    headers=headers,
+                                    params=works_id_params)
+            try:
+                j = json.loads(response.text)
+            except Exception:
+                kwargs['output'].write(
+                        "WoS response for citing works for DOI/WoS_ID "
+                        f"'{doi}/{wos_id}' is not JSON\n")
+                works_id_params['firstRecord'] = num_records
+                continue
+
+            for id in j['Data']['Records']['records']['REC']:
+                works_ids.append(id['UID'])
+
+            num_records = j['QueryResult']['RecordsFound']
+            works_id_params['firstRecord'] += works_id_params['count']
+
+        kwargs['output'].write(
+                f"        {len(works_ids)} citations found ...\n")
+        for works_id in works_ids:
+            process_works_id(works_id, **kwargs)
