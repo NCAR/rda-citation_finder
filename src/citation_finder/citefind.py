@@ -8,9 +8,9 @@ from .cache import clean_cache
 from .configure import configure
 from .doi_list import get_doi_list
 from .local_settings import config
-from .query_crossref import query_crossref
-from .query_scopus import query_scopus
-from .query_wos import query_wos
+from .crossref import query as query_crossref
+from .scopus import query as query_scopus
+from .wos import query as query_wos
 
 
 def on_crash(exctype, value, traceback):
@@ -79,12 +79,15 @@ def parse_args(args):
 
 
 def query_service(service, **kwargs):
+    kwargs['output'].write(f"Querying '{service}' ...\n")
     if service == "crossref":
         query_crossref(**kwargs)
     elif service == "scopus":
         query_scopus(**kwargs)
     elif service == "wos":
         query_wos(**kwargs)
+
+    kwargs['output'].write(f"... done querying '{service}'.\n")
 
 
 def main():

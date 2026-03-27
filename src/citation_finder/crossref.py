@@ -1,5 +1,5 @@
 from .local_settings import config
 
 
-def query_crossref(**kwargs):
+def do_query(**kwargs):
     pass
