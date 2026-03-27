@@ -51,6 +51,13 @@ def parse_args(args):
     if len(settings['services']) == 0:
         settings['services'] = [s for s in config['services'].keys()]
 
+    if 'no_services' in locals():
+        for service in no_services:
+            try:
+                del settings['services'][settings['services'].index(service)]
+            except Exception:
+                raise ValueError(f"'{service}' is not a valid service")
+
     return settings
 
 
