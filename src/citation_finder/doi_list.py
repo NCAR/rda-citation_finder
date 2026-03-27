@@ -18,15 +18,13 @@ def get_doi_list_from_db(doi_group):
             conn.close()
 
 
-def get_nodes(json_path):
+def json_parse(response, json_path):
     nodes = json_path.split(".")
     if nodes[0] == "$":
-        return nodes[1:]
+        del nodes[0]
     else:
         raise ValueError(f"'{json_path}' is not a valid JSON path")
 
-
-def decode_response(response, nodes):
     vals = []
     o = json.loads(response.text)
     for x in range(0, len(nodes)):
@@ -51,9 +49,6 @@ def decode_response(response, nodes):
 def get_doi_list_from_api(doi_group):
     api = config['doi-groups'][doi_group]['doi-query']['api']
     base_url = api['url']
-    doi_nodes = get_nodes(api['response']['doi'])
-    publisher_nodes = get_nodes(api['response']['publisher'])
-    asset_type_nodes = get_nodes(api['response']['asset-type'])
     page_count = 1
     page_number = 1
     while page_number <= page_count:
@@ -69,9 +64,9 @@ def get_doi_list_from_api(doi_group):
 
         print(url)
         response = requests.get(url)
-        dois = decode_response(response, doi_nodes)
-        publishers = decode_response(response, publisher_nodes)
-        asset_types = decode_response(response, asset_type_nodes)
+        dois = json_parse(response, api['response']['doi'])
+        publishers = json_parse(response, api['response']['publisher'])
+        asset_types = json_parse(response, api['response']['asset-type'])
 
     return list(zip(dois, publishers, asset_types))
 
