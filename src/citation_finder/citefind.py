@@ -27,8 +27,8 @@ def parse_args(args):
     if args[0] not in config['doi-groups']:
         raise ValueError(f"'{args[0]}' is not a valid doi group")
 
-    settings = {'doi_group': args[0], 'keep_json': False, 'delimiter': ";",
-                'services': []}
+    settings = {'doi_group': args[0], 'keep_json': False, 'no_works': False,
+                'delimiter': ";", 'services': []}
     n = 1
     while n < len(args):
         if args[n] == "-d":
@@ -52,7 +52,7 @@ def parse_args(args):
         elif args[n] == "-k":
             pass
         elif args[n] == "--no-works":
-            pass
+            settings['no_works'] = True
 
         n += 1
 
@@ -190,7 +190,8 @@ def main():
         print(settings['doi_list'])
         for service in settings['services']:
             query_service(service, doi_list=settings['doi_list'],
-                          output=settings['output'])
+                          output=settings['output'],
+                          no_works=settings['no_works'])
 
 
 if __name__ == "__main__":
