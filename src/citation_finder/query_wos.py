@@ -1,5 +1,5 @@
 from .local_settings import config
 
 
-def query_wos(settings):
+def query_wos(**kwargs):
     pass

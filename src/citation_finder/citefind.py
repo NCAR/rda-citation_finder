@@ -78,13 +78,13 @@ def parse_args(args):
     return settings
 
 
-def query_service(service, settings):
+def query_service(service, **kwargs):
     if service == "crossref":
-        query_crossref(settings)
+        query_crossref(**kwargs)
     elif service == "scopus":
-        query_scopus(settings)
+        query_scopus(**kwargs)
     elif service == "wos":
-        query_wos(settings)
+        query_wos(**kwargs)
 
 
 def main():
@@ -186,7 +186,8 @@ def main():
 
         print(settings['doi_list'])
         for service in settings['services']:
-            query_service(service, settings)
+            query_service(service, doi_list=settings['doi_list'],
+                          output=settings['output'])
 
 
 if __name__ == "__main__":
