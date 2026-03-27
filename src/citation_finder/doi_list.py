@@ -51,6 +51,7 @@ def json_parse(response, json_path):
 
 
 def get_doi_list_from_api(doi_group, **kwargs):
+    kwargs['output'].write("    filling list from a database ...\n")
     api = config['doi-groups'][doi_group]['doi-query']['api']
     base_url = api['url']
     page_count = 1
@@ -72,7 +73,9 @@ def get_doi_list_from_api(doi_group, **kwargs):
         publishers = json_parse(response, api['response']['publisher'])
         asset_types = json_parse(response, api['response']['asset-type'])
 
-    return list(zip(dois, publishers, asset_types))
+    doi_list = list(zip(dois, publishers, asset_types))
+    kwargs['output'].write(f"    ... found {len(doi_list)} DOIs.\n")
+    return doi_list
 
 
 def get_doi_list(doi_group, **kwargs):
