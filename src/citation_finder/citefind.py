@@ -1,5 +1,8 @@
+import os
 import psycopg2
 import sys
+
+from datetime import datetime
 
 from .cache import clean_cache
 from .configure import configure
@@ -75,13 +78,13 @@ def parse_args(args):
     return settings
 
 
-def query_service(service, doi_list):
+def query_service(service, settings):
     if service == "crossref":
-        query_crossref(doi_list)
+        query_crossref(settings)
     elif service == "scopus":
-        query_scopus(doi_list)
+        query_scopus(settings)
     elif service == "wos":
-        query_wos(doi_list)
+        query_wos(settings)
 
 
 def main():
@@ -152,30 +155,36 @@ def main():
     clean_cache()
     settings = parse_args(args)
     print(settings)
-    try:
-        db = config['citation-database']
-        conn = psycopg2.connect(user=db['user'], password=db['password'],
-                                host=db['host'], dbname=db['dbname'],
-                                connect_timeout=30)
-        cursor = conn.cursor()
-        cursor.execute((
-                f"create table if not exists {db['schemaname']}."
-                f"{config['doi-groups'][settings['doi_group']]['db-table']} "
-                f"(like {db['schemaname']}.template_data_citations including "
-                "all)"))
-        conn.commit()
-    except Exception as err:
-        print(f"Database error: '{err}'")
-    finally:
-        if 'conn' in locals():
-            conn.close()
+    output_file = os.path.join(
+            config['temporary-directory-path'],
+            "output." + datetime.now().strftime("%Y%m%d%H%M"))
+    with open(output_file, "w") as settings['output']:
+        print(f"Output file is {output_file}")
+        try:
+            db = config['citation-database']
+            conn = psycopg2.connect(user=db['user'], password=db['password'],
+                                    host=db['host'], dbname=db['dbname'],
+                                    connect_timeout=30)
+            cursor = conn.cursor()
+            cursor.execute((
+                    "create table if not exists {}.{} (like {}."
+                    "template_data_citations including all)").format(
+                    db['schemaname'],
+                    config['doi-groups'][settings['doi_group']]['db-table'],
+                    db['schemaname']))
+            conn.commit()
+        except Exception as err:
+            print(f"Database error: '{err}'")
+        finally:
+            if 'conn' in locals():
+                conn.close()
 
-    if 'doi_list' not in settings:
-        settings['doi_list'] = get_doi_list(settings['doi_group'])
+        if 'doi_list' not in settings:
+            settings['doi_list'] = get_doi_list(settings['doi_group'])
 
-    print(settings['doi_list'])
-    for service in settings['services']:
-        query_service(service, settings['doi_list'])
+        print(settings['doi_list'])
+        for service in settings['services']:
+            query_service(service, settings)
 
 
 if __name__ == "__main__":
