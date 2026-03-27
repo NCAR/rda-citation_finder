@@ -5,6 +5,9 @@ from .cache import clean_cache
 from .configure import configure
 from .doi_list import get_doi_list
 from .local_settings import config
+from .query_crossref import query_crossref
+from .query_scopus import query_scopus
+from .query_wos import query_wos
 
 
 def on_crash(exctype, value, traceback):
@@ -70,6 +73,15 @@ def parse_args(args):
                     f"'{settings['delimiter']}')")
 
     return settings
+
+
+def query_service(service, doi_list):
+    if service == "crossref":
+        query_crossref(doi_list)
+    elif service == "scopus":
+        query_scopus(doi_list)
+    elif service == "wos":
+        query_wos(doi_list)
 
 
 def main():
@@ -162,6 +174,8 @@ def main():
         settings['doi_list'] = get_doi_list(settings['doi_group'])
 
     print(settings['doi_list'])
+    for service in settings['services']:
+        query_service(service, settings['doi_list'])
 
 
 if __name__ == "__main__":
