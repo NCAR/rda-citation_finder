@@ -8,9 +8,9 @@ from .cache import clean_cache
 from .configure import configure
 from .doi_list import get_doi_list
 from .local_settings import config
-from .crossref import query as query_crossref
-from .scopus import query as query_scopus
-from .wos import query as query_wos
+from .crossref import do_query as query_crossref
+from .scopus import do_query as query_scopus
+from .wos import do_query as query_wos
 
 
 def on_crash(exctype, value, traceback):
