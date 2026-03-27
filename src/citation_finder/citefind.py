@@ -67,7 +67,7 @@ def parse_args(args):
         else:
             raise ValueError(
                     f"'{doi_data}' not in proper format (delimiter is "
-                    f"'{settings['delimiter']})")
+                    f"'{settings['delimiter']}')")
 
     return settings
 
