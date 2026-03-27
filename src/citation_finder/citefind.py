@@ -27,8 +27,10 @@ def parse_args(args):
     while n < len(args):
         if args[n] == "-d":
             n += 1
+            doi_data = args[n]
         elif args[n] == "-s":
             n += 1
+            settings['delimiter'] = args[n]
         elif args[n] == "--only-services":
             n += 1
             for service in args[n].split(","):
@@ -57,6 +59,13 @@ def parse_args(args):
                 del settings['services'][settings['services'].index(service)]
             except Exception:
                 raise ValueError(f"'{service}' is not a valid service")
+
+    if 'doi_data' in locals():
+        parts = doi_data.split(settings['delimiter'])
+        if len(parts) == 3:
+            settings['doi_list'] = [tuple(parts)]
+        else:
+            raise ValueError(f"'{doi_data}' not in proper format")
 
     return settings
 
@@ -129,7 +138,6 @@ def main():
     clean_cache()
     settings = parse_args(args)
     print(settings)
-    sys.exit(1)
     try:
         db = config['citation-database']
         conn = psycopg2.connect(user=db['user'], password=db['password'],
@@ -148,8 +156,10 @@ def main():
         if 'conn' in locals():
             conn.close()
 
-    doi_list = get_doi_list(settings['doi_group'])
-    print(doi_list)
+    if 'doi_list' not in settings:
+        settings['doi_list'] = get_doi_list(settings['doi_group'])
+
+    print(settings['doi_list'])
 
 
 if __name__ == "__main__":
