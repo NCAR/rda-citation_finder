@@ -8,14 +8,14 @@ def do_query(**kwargs):
     wos = config['services']['wos']
     api_url = wos['api-url']
     headers = {'X-ApiKey': wos['api-key']}
-    params = {'databaseId': "DCI", 'count': 1, 'firstRecord': 1,
-              'viewField': "none"}
+    wos_id_params = {'databaseId': "DCI", 'count': 1, 'firstRecord': 1,
+                     'viewField': "none"}
     for doi, publisher, asset_type in kwargs['doi_list']:
         kwargs['output'].write(
                 f"    querying DOI '{doi} | {publisher} | {asset_type}' ...\n")
         # get the WoS ID for the DOI
-        params['usrQuery'] = f"DO={doi}"
-        response = requests.get(api_url, headers=headers, params=params)
+        wos_id_params['usrQuery'] = f"DO={doi}"
+        response = requests.get(api_url, headers=headers, params=wos_id_params)
         try:
             j = json.loads(response.text)
         except Exception:
