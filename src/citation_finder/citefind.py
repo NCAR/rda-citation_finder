@@ -180,7 +180,9 @@ def main():
                 conn.close()
 
         if 'doi_list' not in settings:
-            settings['doi_list'] = get_doi_list(settings['doi_group'])
+            settings['doi_list'] = (
+                    get_doi_list(settings['doi_group'],
+                                 output=settings['output']))
 
         print(settings['doi_list'])
         for service in settings['services']:

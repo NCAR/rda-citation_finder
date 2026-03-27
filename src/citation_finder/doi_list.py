@@ -5,14 +5,18 @@ import requests
 from .local_settings import config
 
 
-def get_doi_list_from_db(doi_group):
+def get_doi_list_from_db(doi_group, **kwargs):
+    kwargs['output'].write("    filling list from a database ...\n")
     try:
         db = config['citation-database']
         conn = psycopg2.connect(user=db['user'], password=db['password'],
                                 host=db['host'], dbname=db['dbname'])
         cursor = conn.cursor()
         cursor.execute(config['doi-groups'][doi_group]['doi-query']['db'])
-        return cursor.fetchall()
+        doi_list = cursor.fetchall()
+        kwargs['output'].write(
+                f"    ... found {len(doi_list)} DOIs.\n")
+        return doi_list
     finally:
         if 'conn' in locals():
             conn.close()
@@ -46,7 +50,7 @@ def json_parse(response, json_path):
     return vals
 
 
-def get_doi_list_from_api(doi_group):
+def get_doi_list_from_api(doi_group, **kwargs):
     api = config['doi-groups'][doi_group]['doi-query']['api']
     base_url = api['url']
     page_count = 1
@@ -71,10 +75,14 @@ def get_doi_list_from_api(doi_group):
     return list(zip(dois, publishers, asset_types))
 
 
-def get_doi_list(doi_group):
+def get_doi_list(doi_group, **kwargs):
+    kwargs['output'].write(f"Filling list of DOIs for '{doi_group}' ...\n")
     if 'db' in config['doi-groups'][doi_group]['doi-query']:
-        return get_doi_list_from_db(doi_group)
+        doi_list = get_doi_list_from_db(doi_group, **kwargs)
     elif 'api' in config['doi-groups'][doi_group]['doi-query']:
-        return get_doi_list_from_api(doi_group)
+        doi_list = get_doi_list_from_api(doi_group, **kwargs)
     else:
         raise RuntimeError(f"unable to build list of DOIs for {doi_group}")
+
+    kwargs['output'].write("... done filling DOI list.\n")
+    return doi_list
