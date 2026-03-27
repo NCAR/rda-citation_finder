@@ -17,6 +17,40 @@ def on_crash(exctype, value, traceback):
 sys.excepthook = on_crash
 
 
+def parse_args(args):
+    settings = {'doi_group': args[0], 'keep_json': False, 'delimiter': ";",
+                'services': []}
+    n = 1
+    while n < len(args):
+        if args[n] == "-d":
+            n += 1
+        elif args[n] == "-s":
+            n += 1
+        elif args[n] == "--only-services":
+            n += 1
+            for service in args[n].split(","):
+                service = service.strip()
+                if service in config['services'].keys():
+                    settings['services'].append(service)
+                else:
+                    raise ValueError(f"'{service}' is not a valid service")
+
+        elif args[n] == "--no-services":
+            n += 1
+            no_services = [s for s in args[n].split(",")]
+        elif args[n] == "-k":
+            pass
+        elif args[n] == "--no-works":
+            pass
+
+        n += 1
+
+    if len(settings['services']) == 0:
+        settings['services'] = [s for s in config['services'].keys()]
+
+    return settings
+
+
 def main():
     tool_name = sys.argv[0][sys.argv[0].rfind("/")+1:]
     if len(sys.argv[1:]) == 0 or sys.argv[1] == "--help":
@@ -83,10 +117,12 @@ def main():
         sys.exit(0)
 
     clean_cache()
-    doi_group = args[0]
-    if doi_group not in config['doi-groups']:
-        raise ValueError(f"'{doi_group}' is not a valid doi group")
+    settings = parse_args(args)
+    if settings['doi_group'] not in config['doi-groups']:
+        raise ValueError(f"'{settings['doi_group']}' is not a valid doi group")
 
+    print(settings)
+    sys.exit(1)
     try:
         db = config['citation-database']
         conn = psycopg2.connect(user=db['user'], password=db['password'],
@@ -95,8 +131,9 @@ def main():
         cursor = conn.cursor()
         cursor.execute((
                 f"create table if not exists {db['schemaname']}."
-                f"{config['doi-groups'][doi_group]['db-table']} (like "
-                f"{db['schemaname']}.template_data_citations including all)"))
+                f"{config['doi-groups'][settings['doi_group']]['db-table']} "
+                f"(like {db['schemaname']}.template_data_citations including "
+                "all)"))
         conn.commit()
     except Exception as err:
         print(f"Database error: '{err}'")
@@ -104,7 +141,7 @@ def main():
         if 'conn' in locals():
             conn.close()
 
-    doi_list = get_doi_list(doi_group)
+    doi_list = get_doi_list(settings['doi_group'])
     print(doi_list)
 
 
