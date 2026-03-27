@@ -18,6 +18,9 @@ sys.excepthook = on_crash
 
 
 def parse_args(args):
+    if args[0] not in config['doi-groups']:
+        raise ValueError(f"'{args[0]}' is not a valid doi group")
+
     settings = {'doi_group': args[0], 'keep_json': False, 'delimiter': ";",
                 'services': []}
     n = 1
@@ -118,9 +121,6 @@ def main():
 
     clean_cache()
     settings = parse_args(args)
-    if settings['doi_group'] not in config['doi-groups']:
-        raise ValueError(f"'{settings['doi_group']}' is not a valid doi group")
-
     print(settings)
     sys.exit(1)
     try:
