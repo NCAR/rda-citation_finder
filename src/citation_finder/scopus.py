@@ -1,5 +1,98 @@
+import json
+import os
+import psycopg2
+import requests
+import sys
+import time
+
+from pathlib import Path
+
 from .local_settings import config
 
 
+def get_publisher_fixups(**kwargs):
+    try:
+        db = config['citation-database']
+        conn = psycopg2.connect(user=db['user'], password=db['password'],
+                                host=db['host'], dbname=db['dbname'])
+        cursor = conn.cursor()
+        cursor.execute(
+                "select original_name, fixup from citation.publisher_fixups")
+        return cursor.fetchall()
+    except Exception as err:
+        kwargs['output'].write(f"***UNABLE TO GET PUBLISHER FIXUPS: '{err}'\n")
+        sys.exit(1)
+    finally:
+        if 'conn' in locals():
+            conn.close()
+
+
 def do_query(**kwargs):
-    pass
+    api_url = config['services']['scopus']['api_url']
+    api_key = config['services']['scopus']['api-key']
+    params = {'start': 0,
+              'field': "prism:doi,prism:url,prism:publicationName,"
+                       "prism:coverDate,prism:volume,prism:pageRange,"
+                       "prism:aggregationType,prism:isbn,dc:title",
+              'httpAccept': "application/json", 'apiKey': api_key}
+    publisher_fixups = get_publisher_fixups(output=kwargs['output'])
+    for doi, publisher, asset_type in kwargs['doi_list']:
+        kwargs['output'].write(
+                f"    querying DOI '{doi} | {publisher} | {asset_type}' ...\n")
+        total_results = 0x7fffffff
+        while params['start'] < total_results:
+            filename = (doi.replace("/", "@@") + ".elsevier." +
+                        str(params['start']) + ".json")
+            filename = os.path.join(config['temporary-directory-path'],
+                                    filename)
+            if os.path.exists(filename):
+                with open(filename, "r") as f:
+                    j = json.load(f)
+
+            else:
+                params['query'] = "ALL:" + doi
+                num_tries = 0
+                while num_tries < 3:
+                    time.sleep(num_tries * 5)
+                    try:
+                        response = requests.get(api_url, params=params)
+                        j = json.loads(response.text)
+                        if 'service-error' not in j:
+                            break
+
+                    except Exception:
+                        Path(filename).unlink(missing_ok=True)
+
+                    num_tries += 1
+
+                if num_tries == 3:
+                    kwargs['output'].write(
+                            f"Error reading Scopus JSON for DOI '{doi}': "
+                            f"filename: '{filename}', params: '{params}'\n")
+                    continue
+
+            if 'error-response' in j:
+                ecode = j['error-response']['error-code']
+                if ecode == "TOO MANY REQUESTS":
+                    kwargs['output'].write(
+                            "***ABORTING DUE TO RATE LIMITING\n")
+                    return
+                else:
+                    kwargs['output'].write(
+                            f"      Error: '{ecode}' at {params['start']}\n")
+                    continue
+
+            total_results = j['search-results']['opensearch:totalResults']
+            if total_results == 0:
+                break
+
+            params['start'] += j['search-results']['opensearch:itemsPerPage']
+            for entry in j['search-results']['entry']:
+                # get the "works" DOI
+                try:
+                    works_doi = entry['prism:doi'].replace("\\/", "/")
+                except Exception:
+                    continue
+
+            if not inserted_citation(doi, works_doi, 'scopus', **kwargs)
+                continue
