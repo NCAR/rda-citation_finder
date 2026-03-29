@@ -189,7 +189,8 @@ def main():
 
         print(settings['doi_list'])
         for service in settings['services']:
-            query_service(service, doi_list=settings['doi_list'],
+            query_service(service, doi_group=settings['doi_group'],
+                          doi_list=settings['doi_list'],
                           output=settings['output'],
                           no_works=settings['no_works'])
 
