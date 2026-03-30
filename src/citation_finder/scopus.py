@@ -94,5 +94,5 @@ def do_query(**kwargs):
                 except Exception:
                     continue
 
-            if not inserted_citation(doi, works_doi, 'scopus', **kwargs)
+            if not inserted_citation(doi, works_doi, 'Scopus', **kwargs)
                 continue
