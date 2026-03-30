@@ -29,7 +29,7 @@ def get_publisher_fixups(**kwargs):
 
 
 def do_query(**kwargs):
-    api_url = config['services']['scopus']['api_url']
+    api_url = config['services']['scopus']['api-url']
     api_key = config['services']['scopus']['api-key']
     params = {'start': 0,
               'field': "prism:doi,prism:url,prism:publicationName,"
