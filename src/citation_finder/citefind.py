@@ -69,7 +69,7 @@ def parse_args(args):
     if 'doi_data' in locals():
         parts = doi_data.split(settings['delimiter'])
         if len(parts) == 3:
-            settings['doi_list'] = [tuple(parts)]
+            settings['doi_list'] = [tuple([e.strip() for e in parts])]
         else:
             raise ValueError(
                     f"'{doi_data}' not in proper format (delimiter is "
