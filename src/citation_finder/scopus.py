@@ -7,6 +7,7 @@ import time
 
 from pathlib import Path
 
+from .inserts import inserted_citation
 from .local_settings import config
 
 
