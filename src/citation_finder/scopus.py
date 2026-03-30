@@ -87,7 +87,8 @@ def do_query(**kwargs):
             if total_results == 0:
                 break
 
-            params['start'] += j['search-results']['opensearch:itemsPerPage']
+            params['start'] += int(
+                    j['search-results']['opensearch:itemsPerPage'])
             for entry in j['search-results']['entry']:
                 # get the "works" DOI
                 try:
