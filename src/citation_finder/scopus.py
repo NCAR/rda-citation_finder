@@ -83,7 +83,7 @@ def do_query(**kwargs):
                             f"      Error: '{ecode}' at {params['start']}\n")
                     continue
 
-            total_results = j['search-results']['opensearch:totalResults']
+            total_results = int(j['search-results']['opensearch:totalResults'])
             if total_results == 0:
                 break
 
