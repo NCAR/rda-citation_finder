@@ -1,3 +1,4 @@
+import importlib
 import os
 import psycopg2
 import sys
@@ -8,9 +9,6 @@ from .cache import clean_cache
 from .configure import configure
 from .doi_list import get_doi_list
 from .local_settings import config
-from .crossref import do_query as query_crossref
-from .scopus import do_query as query_scopus
-from .wos import do_query as query_wos
 
 
 def on_crash(exctype, value, traceback):
@@ -78,15 +76,11 @@ def parse_args(args):
     return settings
 
 
-def query_service(service, **kwargs):
+def query_service(module, **kwargs):
+    service = getattr(module, '__name__').split(".")[-1]
     kwargs['output'].write(f"Querying '{service}' ...\n")
-    if service == "crossref":
-        query_crossref(**kwargs)
-    elif service == "scopus":
-        query_scopus(**kwargs)
-    elif service == "wos":
-        query_wos(**kwargs)
-
+    query = getattr(module, 'do_query')
+    query(**kwargs)
     kwargs['output'].write(f"... done querying '{service}'.\n")
 
 
@@ -188,8 +182,11 @@ def main():
                                  output=settings['output']))
 
         print(settings['doi_list'])
+        print(settings['services'])
         for service in settings['services']:
-            query_service(service, doi_group=settings['doi_group'],
+            module = importlib.import_module(
+                    "." + service, package=__package__)
+            query_service(module, doi_group=settings['doi_group'],
                           doi_list=settings['doi_list'],
                           output=settings['output'],
                           no_works=settings['no_works'])
