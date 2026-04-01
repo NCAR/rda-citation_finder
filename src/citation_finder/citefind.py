@@ -4,6 +4,7 @@ import psycopg2
 import sys
 
 from datetime import datetime
+from pathlib import Path
 
 from .cache import clean_cache
 from .configure import configure
@@ -170,26 +171,30 @@ def main():
                     config['doi-groups'][settings['doi_group']]['db-table'],
                     db['schemaname']))
             conn.commit()
+            if 'doi_list' not in settings:
+                settings['doi_list'] = (
+                        get_doi_list(settings['doi_group'],
+                                     output=settings['output']))
+
+            print(settings['doi_list'])
+            print(settings['services'])
+            for service in settings['services']:
+                module = importlib.import_module(
+                        "." + service, package=__package__)
+                query_service(module, doi_group=settings['doi_group'],
+                              doi_list=settings['doi_list'],
+                              output=settings['output'],
+                              no_works=settings['no_works'])
+
         except Exception as err:
-            print(f"Database error: '{err}'")
+            print(f"An error occured: '{err}'")
         finally:
             if 'conn' in locals():
                 conn.close()
 
-        if 'doi_list' not in settings:
-            settings['doi_list'] = (
-                    get_doi_list(settings['doi_group'],
-                                 output=settings['output']))
-
-        print(settings['doi_list'])
-        print(settings['services'])
-        for service in settings['services']:
-            module = importlib.import_module(
-                    "." + service, package=__package__)
-            query_service(module, doi_group=settings['doi_group'],
-                          doi_list=settings['doi_list'],
-                          output=settings['output'],
-                          no_works=settings['no_works'])
+            for file in Path(
+                    config['temporary-directory-path']).glob("*.json"):
+                file.unlink()
 
 
 if __name__ == "__main__":
