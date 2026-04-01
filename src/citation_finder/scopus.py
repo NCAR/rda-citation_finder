@@ -61,6 +61,9 @@ def find_citations(**kwargs):
                         response = requests.get(API_URL, params=params)
                         j = json.loads(response.text)
                         if 'service-error' not in j:
+                            with open(filename, "w") as f:
+                                f.write(response.text)
+
                             break
 
                     except Exception:
@@ -75,6 +78,7 @@ def find_citations(**kwargs):
                     continue
 
             if 'error-response' in j:
+                Path(filename).unlink(missing_ok=True)
                 ecode = j['error-response']['error-code']
                 if ecode == "TOO MANY REQUESTS":
                     kwargs['output'].write(
