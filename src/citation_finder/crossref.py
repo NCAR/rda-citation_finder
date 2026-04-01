@@ -54,25 +54,24 @@ def find_citations(**kwargs):
                     next_cursor = None
                     continue
 
-                if j['status'] != "ok":
-                    Path(filename).unlink(missing_ok=True)
-                    kwargs['output'].write(
-                            f"Server failure for DOI '{doi}': '{j['message']}")
+            if j['status'] != "ok":
+                Path(filename).unlink(missing_ok=True)
+                kwargs['output'].write(
+                        f"Server failure for DOI '{doi}': '{j['message']}")
+                next_cursor = None
+                continue
+
+            kwargs['output'].write(
+                    f"      {len(j['message']['events'])} citations "
+                    "found ...\n")
+            for event in j['message']['events']:
+                works_doi = event['subj_id'].replace("\\/", "/")
+                works_doi = works_doi.split("doi.org/")[-1]
+                if not inserted_citation(doi, works_doi, 'CrossRef', **kwargs):
                     next_cursor = None
                     continue
 
-                kwargs['output'].write(
-                        f"      {len(j['message']['events'])} citations "
-                        "found ...")
-                for event in j['message']['events']:
-                    works_doi = event['subj_id'].replace("\\/", "/")
-                    works_doi = works_doi.split("doi.org/")[-1]
-                    if not inserted_citation(doi, works_doi, 'CrossRef',
-                                             **kwargs):
-                        next_cursor = None
-                        continue
-
-                next_cursor = j['message']['next-cursor']
+            next_cursor = j['message']['next-cursor']
 
 
 def get_works_data(works_doi):
