@@ -1,6 +1,7 @@
 import json
 import os
 import requests
+import time
 
 from .local_settings import config
 
@@ -9,7 +10,50 @@ API_URL = "https://api.eventdata.crossref.org/v1/events"
 
 
 def find_citations(**kwargs):
-    pass
+    params = {'source': "crossref", 'obj-id': ""}
+    for doi, publisher, asset_type in kwargs['doi_list']:
+        kwargs['output'].write(
+                f"    querying DOI '{doi} | {publisher} | {asset_type}' ...\n")
+        filename = (doi.replace("/", "@@") + ".crossref.json")
+        filename = os.path.join(config['temporary-directory-path'], filename)
+        if os.path.exists(filename):
+            with open(filename, "r") as f:
+                j = json.load(f)
+
+        else:
+            ntries = 0
+            while ntries < 3:
+                time.sleep(num_tries * 5)
+                try:
+                    params['obj-id'] = doi
+                    response = requests.get(API_URL, params=params)
+                    j = json.loads(response.text)
+                    with open(filename, "w") as f:
+                        f.write(response.text)
+
+                    break
+                except Exception:
+                    Path(filename).unlink(missing_ok=True)
+
+                ntries += 1
+
+            if ntries == 3:
+                kwargs['output'].write(
+                        f"Error reading CrossRef JSON for DOI '{doi}' after "
+                        "three attempts")
+                continue
+
+            if j['status'] != "ok":
+                Path(filename).unlink(missing_ok=True)
+                kwargs['output'].write(
+                        f"Server failure for DOI '{doi}': '{j['message']}")
+                continue
+
+            kwargs['output'].write(
+                    f"      {len(j['message']['events'])} citations found ...")
+            for event in j['message']['events']:
+                works_doi = events['subj_id'].replace("\\/", "/")
+                works_doi = works_doi.split("doi.org/")[-1]
 
 
 def get_works_data(works_doi):
