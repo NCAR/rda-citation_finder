@@ -3,7 +3,7 @@ import psycopg2
 from .local_settings import config
 
 
-def inserted_citation(doi, works_doi, service, **kwargs):
+def insert_citation(doi, works_doi, service, **kwargs):
     try:
         db = config['citation-database']
         conn = psycopg2.connect(user=db['user'], password=db['password'],
@@ -16,9 +16,9 @@ def inserted_citation(doi, works_doi, service, **kwargs):
                 "conflict (doi_data, doi_work) do nothing",
                 (doi, works_doi, "1"))
         conn.commit()
-        return True
+        return (True, (cursor.rowcount == 1))
     except Exception as err:
         kwargs['output'].write(
                 "Error while inserting {} citation ({}, {}): '{}'\n"
                 .format(service, doi, works_doi, err))
-        return False
+        return (False, False)
