@@ -68,7 +68,7 @@ def find_citations(**kwargs):
                 works_doi = event['subj_id'].replace("\\/", "/")
                 works_doi = works_doi.split("doi.org/")[-1]
                 success, new_entry =  insert_citation(
-                        doi, works_doi, "CrossRef", **kwargs):
+                        doi, works_doi, "CrossRef", **kwargs)
                 if not success:
                     next_cursor = None
                     continue
