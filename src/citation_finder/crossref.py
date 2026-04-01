@@ -5,7 +5,7 @@ import time
 
 from pathlib import Path
 
-from .inserts import inserted_citation
+from .inserts import insert_citation
 from .local_settings import config
 
 
@@ -67,9 +67,14 @@ def find_citations(**kwargs):
             for event in j['message']['events']:
                 works_doi = event['subj_id'].replace("\\/", "/")
                 works_doi = works_doi.split("doi.org/")[-1]
-                if not inserted_citation(doi, works_doi, 'CrossRef', **kwargs):
+                success, new_entry =  insert_citation(
+                        doi, works_doi, "CrossRef", **kwargs):
+                if not success:
                     next_cursor = None
                     continue
+
+                if new_entry:
+                    pass
 
             next_cursor = j['message']['next-cursor']
 
