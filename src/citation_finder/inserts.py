@@ -13,7 +13,7 @@ def inserted_citation(doi, works_doi, service, **kwargs):
                 f"insert into {db['schemaname']}."
                 f"{config['doi-groups'][kwargs['doi_group']]['db-table']} "
                 "(doi_data, doi_work, new_flag) values (%s, %s, %s) on "
-                "conflict on constraint (doi_data, doi_work) do nothing",
+                "conflict (doi_data, doi_work) do nothing",
                 (doi, works_doi, "1"))
         conn.commit()
         return True
