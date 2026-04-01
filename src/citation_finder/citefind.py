@@ -79,8 +79,8 @@ def parse_args(args):
 def query_service(module, **kwargs):
     service = getattr(module, '__name__').split(".")[-1]
     kwargs['output'].write(f"Querying '{service}' ...\n")
-    query = getattr(module, 'do_query')
-    query(**kwargs)
+    find_citations = getattr(module, 'find_citations')
+    find_citations(**kwargs)
     kwargs['output'].write(f"... done querying '{service}'.\n")
 
 

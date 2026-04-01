@@ -6,14 +6,11 @@ import time
 from .local_settings import config
 
 
-def wos_settings():
-    return (config['services']['wos']['api_url'],
-            config['services']['wos']['api-key'])
+API_URL = "https://wos-api.clarivate.com/api/wos"
 
 
 def process_works_id(works_id, **kwargs):
-    api_url, api_key = wos_settings()
-    headers = {'X-ApiKey': api_key}
+    headers = {'X-ApiKey': config['services']['wos']['api-key']}
     params = {'databaseId': "WOS", 'count': 1, 'firstRecord': 1,
               'viewField': "identifiers"}
     if not kwargs['no_works']:
@@ -22,9 +19,8 @@ def process_works_id(works_id, **kwargs):
     # get the data for each work
 
 
-def do_query(**kwargs):
-    api_url, api_key = wos_settings()
-    headers = {'X-ApiKey': api_key}
+def find_citations(**kwargs):
+    headers = {'X-ApiKey': config['services']['wos']['api-key']}
     wos_id_params = {'databaseId': "DCI", 'count': 1, 'firstRecord': 1,
                      'viewField': "none"}
     for doi, publisher, asset_type in kwargs['doi_list']:
@@ -32,7 +28,7 @@ def do_query(**kwargs):
                 f"    querying DOI '{doi} | {publisher} | {asset_type}' ...\n")
         # get the WoS ID for the DOI
         wos_id_params['usrQuery'] = f"DO={doi}"
-        response = requests.get(api_url, headers=headers, params=wos_id_params)
+        response = requests.get(API_URL, headers=headers, params=wos_id_params)
         try:
             j = json.loads(response.text)
         except Exception:
@@ -71,7 +67,7 @@ def do_query(**kwargs):
         num_records = 2
         while works_id_params['firstRecord'] < num_records:
             time.sleep(0.6)
-            response = requests.get(os.path.join(api_url, "citing"),
+            response = requests.get(os.path.join(API_URL, "citing"),
                                     headers=headers,
                                     params=works_id_params)
             try:

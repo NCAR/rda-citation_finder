@@ -5,7 +5,10 @@ import requests
 from .local_settings import config
 
 
-def do_query(**kwargs):
+API_URL = "https://api.eventdata.crossref.org/v1/events"
+
+
+def find_citations(**kwargs):
     pass
 
 

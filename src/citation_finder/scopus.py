@@ -11,6 +11,9 @@ from .inserts import inserted_citation
 from .local_settings import config
 
 
+API_URL = "https://api.elsevier.com/content/search/scopus"
+
+
 def get_publisher_fixups(**kwargs):
     try:
         db = config['citation-database']
@@ -28,8 +31,7 @@ def get_publisher_fixups(**kwargs):
             conn.close()
 
 
-def do_query(**kwargs):
-    api_url = config['services']['scopus']['api-url']
+def find_citations(**kwargs):
     api_key = config['services']['scopus']['api-key']
     params = {'start': 0,
               'field': "prism:doi,prism:url,prism:publicationName,"
@@ -56,7 +58,7 @@ def do_query(**kwargs):
                 while num_tries < 3:
                     time.sleep(num_tries * 5)
                     try:
-                        response = requests.get(api_url, params=params)
+                        response = requests.get(API_URL, params=params)
                         j = json.loads(response.text)
                         if 'service-error' not in j:
                             break
