@@ -1,5 +1,6 @@
 import json
 import os
+import psycopg2
 import requests
 import sys
 import time
@@ -77,7 +78,7 @@ def find_citations(**kwargs):
             for event in j['message']['events']:
                 works_doi = event['subj_id'].replace("\\/", "/")
                 works_doi = works_doi.split("doi.org/")[-1]
-                success, new_entry =  insert_citation(
+                success, new_entry = insert_citation(
                         doi, works_doi, "CrossRef", **kwargs,
                         conn=conn)
                 if not success:
