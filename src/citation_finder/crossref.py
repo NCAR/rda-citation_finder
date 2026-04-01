@@ -14,7 +14,7 @@ API_URL = "https://api.eventdata.crossref.org/v1/events"
 
 def find_citations(**kwargs):
     params = {'source': "crossref", 'obj-id': ""}
-    for doi, publisher, asset_type in kwargs['doi_list']:
+    for doi, publisher, asset_type in kwargs['doi-list']:
         kwargs['output'].write(
                 f"    querying DOI '{doi} | {publisher} | {asset_type}' ...\n")
         filename = (doi.replace("/", "@@") + ".crossref.json")

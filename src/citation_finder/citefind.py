@@ -26,7 +26,7 @@ def parse_args(args):
     if args[0] not in config['doi-groups']:
         raise ValueError(f"'{args[0]}' is not a valid doi group")
 
-    settings = {'doi_group': args[0], 'keep_json': False, 'no_works': False,
+    settings = {'doi-group': args[0], 'keep-json': False, 'no-works': False,
                 'delimiter': ";", 'services': []}
     n = 1
     while n < len(args):
@@ -49,9 +49,9 @@ def parse_args(args):
             n += 1
             no_services = [s for s in args[n].split(",")]
         elif args[n] == "-k":
-            pass
+            settings['keep-json'] = True
         elif args[n] == "--no-works":
-            settings['no_works'] = True
+            settings['no-works'] = True
 
         n += 1
 
@@ -68,7 +68,7 @@ def parse_args(args):
     if 'doi_data' in locals():
         parts = doi_data.split(settings['delimiter'])
         if len(parts) == 3:
-            settings['doi_list'] = [tuple([e.strip() for e in parts])]
+            settings['doi-list'] = [tuple([e.strip() for e in parts])]
         else:
             raise ValueError(
                     f"'{doi_data}' not in proper format (delimiter is "
@@ -108,8 +108,9 @@ def main():
             "                - the DOI\n"
             "                - the publisher of the DOI\n"
             "                - the asset type\n"
-            "-k              keep the json files from the APIs (default is to "
-            "remove them)\n"
+            "-k              keep the json files from the APIs - useful for "
+            " testing\n"
+            "                (default is to remove them)\n"
             "--no-works      don't collect information about the citing "
             "works\n"
             "--only-services SERVICES\n"
@@ -168,23 +169,23 @@ def main():
                     "create table if not exists {}.{} (like {}."
                     "template_data_citations including all)").format(
                     db['schemaname'],
-                    config['doi-groups'][settings['doi_group']]['db-table'],
+                    config['doi-groups'][settings['doi-group']]['db-table'],
                     db['schemaname']))
             conn.commit()
-            if 'doi_list' not in settings:
-                settings['doi_list'] = (
-                        get_doi_list(settings['doi_group'],
+            if 'doi-list' not in settings:
+                settings['doi-list'] = (
+                        get_doi_list(settings['doi-group'],
                                      output=settings['output']))
 
-            print(settings['doi_list'])
+            print(settings['doi-list'])
             print(settings['services'])
             for service in settings['services']:
                 module = importlib.import_module(
                         "." + service, package=__package__)
-                query_service(module, doi_group=settings['doi_group'],
-                              doi_list=settings['doi_list'],
+                query_service(module, doi_group=settings['doi-group'],
+                              doi_list=settings['doi-list'],
                               output=settings['output'],
-                              no_works=settings['no_works'])
+                              no_works=settings['no-works'])
 
         except Exception as err:
             print(f"An error occured: '{err}'")

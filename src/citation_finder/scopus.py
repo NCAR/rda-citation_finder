@@ -39,7 +39,7 @@ def find_citations(**kwargs):
                        "prism:aggregationType,prism:isbn,dc:title",
               'httpAccept': "application/json", 'apiKey': api_key}
     publisher_fixups = get_publisher_fixups(output=kwargs['output'])
-    for doi, publisher, asset_type in kwargs['doi_list']:
+    for doi, publisher, asset_type in kwargs['doi-list']:
         kwargs['output'].write(
                 f"    querying DOI '{doi} | {publisher} | {asset_type}' ...\n")
         total_results = 0x7fffffff
