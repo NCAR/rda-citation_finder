@@ -3,6 +3,9 @@ import os
 import requests
 import time
 
+from pathlib import Path
+
+from .inserts import inserted_citation
 from .local_settings import config
 
 
@@ -21,8 +24,8 @@ def find_citations(**kwargs):
                 j = json.load(f)
 
         else:
-            ntries = 0
-            while ntries < 3:
+            num_tries = 0
+            while num_tries < 3:
                 time.sleep(num_tries * 5)
                 try:
                     params['obj-id'] = doi
@@ -35,9 +38,9 @@ def find_citations(**kwargs):
                 except Exception:
                     Path(filename).unlink(missing_ok=True)
 
-                ntries += 1
+                num_tries += 1
 
-            if ntries == 3:
+            if num_tries == 3:
                 kwargs['output'].write(
                         f"Error reading CrossRef JSON for DOI '{doi}' after "
                         "three attempts")
@@ -52,8 +55,10 @@ def find_citations(**kwargs):
             kwargs['output'].write(
                     f"      {len(j['message']['events'])} citations found ...")
             for event in j['message']['events']:
-                works_doi = events['subj_id'].replace("\\/", "/")
+                works_doi = event['subj_id'].replace("\\/", "/")
                 works_doi = works_doi.split("doi.org/")[-1]
+                if not inserted_citation(doi, works_doi, 'CrossRef', **kwargs):
+                    continue
 
 
 def get_works_data(works_doi):
