@@ -13,7 +13,7 @@ API_URL = "https://api.eventdata.crossref.org/v1/events"
 
 
 def find_citations(**kwargs):
-    params = {'source': "crossref", 'obj-id': ""}
+    params = {'source': "crossref", 'obj-id': "", 'cursor': ""}
     for doi, publisher, asset_type in kwargs['doi_list']:
         kwargs['output'].write(
                 f"    querying DOI '{doi} | {publisher} | {asset_type}' ...\n")
@@ -33,6 +33,9 @@ def find_citations(**kwargs):
                     time.sleep(num_tries * 5)
                     try:
                         params['obj-id'] = doi
+                        if next_cursor != "__first__":
+                            params['cursor'] = next_cursor
+
                         response = requests.get(API_URL, params=params)
                         j = json.loads(response.text)
                         with open(filename, "w") as f:
