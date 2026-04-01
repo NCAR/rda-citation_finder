@@ -7,7 +7,7 @@ import time
 
 from pathlib import Path
 
-from .inserts import inserted_citation
+from .inserts import insert_citation
 from .local_settings import config
 
 
@@ -102,5 +102,10 @@ def find_citations(**kwargs):
                 except Exception:
                     continue
 
-            if not inserted_citation(doi, works_doi, 'Scopus', **kwargs):
+            success, new_entry = insert_citation(doi, works_doi, "Scopus",
+                                                 **kwargs)
+            if not success:
                 continue
+
+            if new_entry:
+                pass
