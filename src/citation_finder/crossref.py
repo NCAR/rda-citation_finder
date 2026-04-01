@@ -1,11 +1,12 @@
 import json
 import os
 import requests
+import sys
 import time
 
 from pathlib import Path
 
-from .inserts import insert_citation
+from .inserts import insert_citation, insert_source
 from .local_settings import config
 
 
@@ -13,6 +14,15 @@ API_URL = "https://api.eventdata.crossref.org/v1/events"
 
 
 def find_citations(**kwargs):
+    try:
+        db = config['citation-database']
+        conn = psycopg2.connect(user=db['user'], password=db['password'],
+                                host=db['host'], dbname=db['dbname'])
+    except Exception as err:
+        kwargs['output'].write(
+                f"***DATABASE ERROR from crossref.find_citations(): '{err}'\n")
+        sys.exit(1)
+
     params = {'source': "crossref", 'obj-id': "", 'cursor': ""}
     for doi, publisher, asset_type in kwargs['doi_list']:
         kwargs['output'].write(
@@ -68,15 +78,21 @@ def find_citations(**kwargs):
                 works_doi = event['subj_id'].replace("\\/", "/")
                 works_doi = works_doi.split("doi.org/")[-1]
                 success, new_entry =  insert_citation(
-                        doi, works_doi, "CrossRef", **kwargs)
+                        doi, works_doi, "CrossRef", **kwargs,
+                        conn=conn)
                 if not success:
                     next_cursor = None
                     continue
 
+                insert_source(works_doi, doi, "CrossRef", **kwargs,
+                              conn=conn)
                 if new_entry:
                     pass
 
             next_cursor = j['message']['next-cursor']
+
+    if 'conn' in locals():
+        conn.close()
 
 
 def get_works_data(works_doi):
