@@ -193,9 +193,10 @@ def main():
             if 'conn' in locals():
                 conn.close()
 
-            for file in Path(
-                    config['temporary-directory-path']).glob("*.json"):
-                file.unlink()
+            if not settings['keep-json']:
+                for file in Path(
+                        config['temporary-directory-path']).glob("*.json"):
+                    file.unlink()
 
 
 if __name__ == "__main__":
