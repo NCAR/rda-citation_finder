@@ -7,7 +7,7 @@ import time
 
 from pathlib import Path
 
-from .inserts import insert_citation, insert_source
+from .inserts import insert_citation, insert_source, inserted_doi_data
 from .local_settings import config
 
 
@@ -82,13 +82,17 @@ def find_citations(**kwargs):
                         doi, works_doi, "CrossRef", **kwargs,
                         conn=conn)
                 if not success:
-                    next_cursor = None
                     continue
 
                 insert_source(works_doi, doi, "CrossRef", **kwargs,
                               conn=conn)
-                if new_entry:
-                    pass
+                if not inserted_doi_data(doi, publisher, asset_type, **kwargs):
+                    continue
+
+                if kwargs['no-works'] or not new_entry:
+                    continue
+
+                # add author data for the citing work
 
             next_cursor = j['message']['next-cursor']
 
