@@ -20,4 +20,15 @@ def insert_citation(data_doi, works_doi, service, **kwargs):
 
 
 def insert_source(works_doi, data_doi, service, **kwargs):
-    pass
+    try:
+        cursor = kwargs['conn'].cursor()
+        cursor.execute(
+                f"insert into {config['citation-database']['schemaname']}."
+                "sources (doi_work, doi_data, source) values (%s, %s, %s) on "
+                "conflict on constraint sources_pkey do nothing",
+                (works_doi, data_doi, service))
+        kwargs['conn'].commit()
+    except Exception as err:
+        kwargs['output'].write(
+                "Error while inserting {} source ({}, {}): '{}'\n"
+                .format(service, works_doi, data_doi, err))
