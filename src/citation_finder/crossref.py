@@ -12,12 +12,13 @@ def find_citations(**kwargs):
     pass
 
 
-def get_works_data(doi):
+def get_works_data(works_doi):
     cache_file = os.path.join(config['temporary-directory-path'], "cache",
-                              doi.replace("/", "@@") + ".crossref.json")
+                              works_doi.replace("/", "@@") + ".crossref.json")
     if not os.path.exists(cache_file):
         try:
-            response = requests.get(f"https://api.crossref.org/works/{doi}")
+            response = requests.get(
+                    f"https://api.crossref.org/works/{works_doi}")
         except Exception:
             return None
 
