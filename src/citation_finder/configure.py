@@ -22,7 +22,6 @@ def configure(settings_file):
     service = {
         'longname': "",
         'title': "",
-        'api-url': "",
         'api-key': "",
     }
     doi_group = {
