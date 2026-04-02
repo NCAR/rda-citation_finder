@@ -92,6 +92,13 @@ def find_citations(**kwargs):
                 if kwargs['no-works'] or not new_entry:
                     continue
 
+                works_data = get_works_data(works_doi)
+                if works_data is None:
+                    kwargs['output'].write(
+                            "***Unable to get CrossRef data for works DOI "
+                            f"'{works_doi}'\n")
+                    continue
+
                 # add author data for the citing work
 
             next_cursor = j['message']['next-cursor']
@@ -107,11 +114,11 @@ def get_works_data(works_doi):
         try:
             response = requests.get(
                     f"https://api.crossref.org/works/{works_doi}")
+            with open(cache_file, "w") as f:
+                f.write(response.text)
+
         except Exception:
             return None
-
-        with open(cache_file, "w") as f:
-            f.write(response.text)
 
     try:
         j = json.load(cache_file)
