@@ -58,7 +58,7 @@ def inserted_doi_data(data_doi, publisher, asset_type, **kwargs):
         return False
 
 
-def inserted_works_author(pid, author, sequence, source, **kwargs):
+def insert_works_author(pid, author, sequence, source, **kwargs):
     columns = ["id", "id_type", "last_name", "first_name", "middle_name",
                "sequence"]
     values = ["%s"] * len(columns)
@@ -132,6 +132,3 @@ def inserted_works_author(pid, author, sequence, source, **kwargs):
         kwargs['output'].write(
                 "Error while inserting author ({}): '{}' from {}"
                 .format(", ".join(params), err, source))
-        return False
-
-    return True
