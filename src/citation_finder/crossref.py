@@ -7,11 +7,57 @@ import time
 
 from pathlib import Path
 
-from .inserts import insert_citation, insert_source, inserted_doi_data
+from .inserts import (insert_citation, insert_source, insert_works_author,
+                      inserted_doi_data)
 from .local_settings import config
+from .utils import convert_unicodes
 
 
 API_URL = "https://api.eventdata.crossref.org/v1/events"
+
+
+def get_works_data(works_doi):
+    cache_file = os.path.join(config['temporary-directory-path'], "cache",
+                              works_doi.replace("/", "@@") + ".crossref.json")
+    if not os.path.exists(cache_file):
+        try:
+            response = requests.get(
+                    f"https://api.crossref.org/works/{works_doi}")
+            with open(cache_file, "w") as f:
+                f.write(response.text)
+
+        except Exception:
+            Path(cache_file).unlink(missing_ok=True)
+            return None
+
+    try:
+        j = json.load(cache_file)
+        return j
+    except Exception:
+        return None
+
+
+def insert_authors(works_data, **kwargs):
+    pid = {'id': works_data['message']['DOI'], 'type': "DOI"}
+    sequence = 0
+    for m_author in works_data['message']['author']:
+        family = convert_unicodes(m_author['family'])
+        given = convert_unicodes(m_author['given']).replace(".-", ". -")
+        if len(given) > 0:
+            author = {'family': family}
+            parts = given.split()
+            author['given'] = parts[0].replace("\\", "\\\\")
+            author['middle'] = (
+                    " ".join([e.replace("\\", "\\\\") for e in parts[1:]]))
+            if 'ORCID' in m_author:
+                author['orcid_id'] = m_author['ORCID']
+                if author['orcid_id'].find("http") == 0:
+                    idx = author['orcid_id'].rfind("/") + 1
+                    if idx > 0:
+                        author['orcid_id'] = author['orcid_id'][idx:]
+
+            insert_works_author(pid, author, sequence, "CrossRef", **kwargs)
+            sequence += 1
 
 
 def find_citations(**kwargs):
@@ -100,28 +146,9 @@ def find_citations(**kwargs):
                     continue
 
                 # add author data for the citing work
+                insert_authors(works_data, output=kwargs['output'])
 
             next_cursor = j['message']['next-cursor']
 
     if 'conn' in locals():
         conn.close()
-
-
-def get_works_data(works_doi):
-    cache_file = os.path.join(config['temporary-directory-path'], "cache",
-                              works_doi.replace("/", "@@") + ".crossref.json")
-    if not os.path.exists(cache_file):
-        try:
-            response = requests.get(
-                    f"https://api.crossref.org/works/{works_doi}")
-            with open(cache_file, "w") as f:
-                f.write(response.text)
-
-        except Exception:
-            return None
-
-    try:
-        j = json.load(cache_file)
-        return j
-    except Exception:
-        return None
