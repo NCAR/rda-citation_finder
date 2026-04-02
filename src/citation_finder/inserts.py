@@ -1,3 +1,5 @@
+import psycopg2
+
 from .local_settings import config
 
 
@@ -54,3 +56,82 @@ def inserted_doi_data(data_doi, publisher, asset_type, **kwargs):
                 "Error updating DOI data ({}, {}, {}): '{}'\n"
                 .format(data_doi, publisher, asset_type, err))
         return False
+
+
+def inserted_works_author(pid, author, sequence, source, **kwargs):
+    columns = ["id", "id_type", "last_name", "first_name", "middle_name",
+               "sequence"]
+    values = ["%s"] * len(columns)
+    params = [pid['id'], pid['type'], author['family'], author['given'],
+              author['middle'], sequence]
+    if source == "Open Library" or source == "CrossRef":
+        on_conflict = [
+                "on conflict on constraint works_authors_pkey do update set "
+                "last_name = case when length(excluded.last_name) > length("
+                "works_authors.last_name) then excluded.last_name else "
+                "works_authors.last_name end, first_name = case when length("
+                "excluded.first_name) > length(works_authors.first_name) then "
+                "excluded.first_name else works_authors.first_name end, "
+                "middle_name = case when length(excluded.middle_name) > "
+                "length(works_authors.middle_name) then excluded.middle_name "
+                "else works_authors.middle_name end"]
+
+    if 'orcid_id' in author:
+        columns.append("orcid_id")
+        params.append(author['orcid_id'])
+        if 'on_conflict' in locals():
+            on_conflict.append(
+                    "orcid_id = case when excluded.orcid_id is not null then "
+                    "excluded.orcid_id else works_authors.orcid_id end")
+
+    insert = (
+            f"insert into {config['citation-database']['schemaname']}."
+            f"works_authors ({', '.join[columns]}) values "
+            f"({', '.join(values)})")
+    if 'on_conflict' in locals():
+        insert += ", ".join(on_conflict)
+
+    try:
+        cursor = kwargs['conn'].cursor()
+        cursor.execute(insert, params)
+        kwargs['conn'].commit()
+    except psycopg2.errors.UniqueViolation:
+        try:
+            cursor.execute(
+                    "select last_name, first_name, middle_name, orcid_id from "
+                    f"{config['citation-database']['schemaname']}."
+                    "works_authors where id = %s and id_type = %s and "
+                    "sequence = %s", (pid['id'], pid['id_type'], sequence))
+            res = cursor.fetchone()
+            dupe_mismatch = False
+            if (res[0] != author['family'] or res[1] != author['given'] or
+                    res[2] != author['middle']):
+                dupe_mismatch = True
+            elif 'orcid_id' in author and res[3] != author['orcid_id']:
+                dupe_mismatch = True
+
+            if dupe_mismatch:
+                kwargs['output'].write(
+                        f"-##-DUPLICATE AUTHOR MISMATCH ({source}): "
+                        f"{pid['type']}: {pid['id']}, last=('{res[0]}'/"
+                        f"'{author['family']}'), first=('{res[1]}'/"
+                        f"'{author['given']}'), middle=('{res[2]}'/"
+                        f"'{author['middle']}')")
+                if 'orcid_id' in author:
+                    kwargs['output'].write(
+                            f", orcid_id=('{res[3]}'/'{author['orcid_id']}')")
+
+                kwargs['output'].write(
+                        f", sequence={sequence}\n")
+
+        except Exception as err:
+            kwargs['output'].write(
+                    f"Error on duplicate author check ('{author['given']} "
+                    f"{author['middle']} {author['family']}): '{err}'\n")
+    except Exception as err:
+        kwargs['output'].write(
+                "Error while inserting author ({}): '{}' from {}"
+                .format(", ".join(params), err, source))
+        return False
+
+    return True
