@@ -16,13 +16,13 @@ from .utils import convert_unicodes
 API_URL = "https://api.eventdata.crossref.org/v1/events"
 
 
-def get_works_data(works_doi):
+def get_work_data(work_doi):
     cache_file = os.path.join(config['temporary-directory-path'], "cache",
-                              works_doi.replace("/", "@@") + ".crossref.json")
+                              work_doi.replace("/", "@@") + ".crossref.json")
     if not os.path.exists(cache_file):
         try:
             response = requests.get(
-                    f"https://api.crossref.org/works/{works_doi}")
+                    f"https://api.crossref.org/works/{work_doi}")
             with open(cache_file, "w") as f:
                 f.write(response.text)
 
@@ -37,10 +37,10 @@ def get_works_data(works_doi):
         return None
 
 
-def insert_authors(works_data, **kwargs):
-    pid = {'id': works_data['message']['DOI'], 'type': "DOI"}
+def insert_authors(work_data, **kwargs):
+    pid = {'id': work_data['message']['DOI'], 'type': "DOI"}
     sequence = 0
-    for m_author in works_data['message']['author']:
+    for m_author in work_data['message']['author']:
         family = convert_unicodes(m_author['family'])
         given = convert_unicodes(m_author['given']).replace(".-", ". -")
         if len(given) > 0:
@@ -58,6 +58,10 @@ def insert_authors(works_data, **kwargs):
 
             insert_works_author(pid, author, sequence, "CrossRef", **kwargs)
             sequence += 1
+
+
+def insert_publication_data(work_doi, **kwargs):
+    pass
 
 
 def find_citations(**kwargs):
@@ -122,15 +126,15 @@ def find_citations(**kwargs):
                     f"      {len(j['message']['events'])} citations "
                     "found ...\n")
             for event in j['message']['events']:
-                works_doi = event['subj_id'].replace("\\/", "/")
-                works_doi = works_doi.split("doi.org/")[-1]
+                work_doi = event['subj_id'].replace("\\/", "/")
+                work_doi = work_doi.split("doi.org/")[-1]
                 success, new_entry = insert_citation(
-                        doi, works_doi, "CrossRef", **kwargs,
+                        doi, work_doi, "CrossRef", **kwargs,
                         conn=conn)
                 if not success:
                     continue
 
-                insert_source(works_doi, doi, "CrossRef", **kwargs,
+                insert_source(work_doi, doi, "CrossRef", **kwargs,
                               conn=conn)
                 if not inserted_doi_data(doi, publisher, asset_type, **kwargs):
                     continue
@@ -138,15 +142,17 @@ def find_citations(**kwargs):
                 if kwargs['no-works'] or not new_entry:
                     continue
 
-                works_data = get_works_data(works_doi)
-                if works_data is None:
+                work_data = get_work_data(work_doi)
+                if work_data is None:
                     kwargs['output'].write(
                             "***Unable to get CrossRef data for works DOI "
-                            f"'{works_doi}'\n")
+                            f"'{work_doi}'\n")
                     continue
 
                 # add author data for the citing work
-                insert_authors(works_data, output=kwargs['output'])
+                insert_authors(work_data, output=kwargs['output'])
+                # add type-specific data for the work
+                insert_publication_data(work_data, output=kwargs['output'])
 
             next_cursor = j['message']['next-cursor']
 
