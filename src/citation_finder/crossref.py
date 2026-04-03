@@ -7,7 +7,10 @@ import time
 
 from pathlib import Path
 
-from .inserts import (insert_citation, insert_source, insert_works_author,
+from .inserts import (insert_citation,
+                      insert_journal_work_data,
+                      insert_source,
+                      insert_work_author,
                       inserted_doi_data)
 from .local_settings import config
 from .utils import convert_unicodes
@@ -56,12 +59,31 @@ def insert_authors(work_data, **kwargs):
                     if idx > 0:
                         author['orcid_id'] = author['orcid_id'][idx:]
 
-            insert_works_author(pid, author, sequence, "CrossRef", **kwargs)
+            insert_work_author(pid, author, sequence, "CrossRef", **kwargs)
             sequence += 1
 
 
-def insert_publication_data(work_doi, **kwargs):
-    pass
+def insert_publication_data(work_data, **kwargs):
+    typ = work_data['message']['type']
+    if typ == "journal-article":
+        pubname = (work_data['message']['container-title']
+                   .replace("\\", "\\\\"))
+        volume = work_data['message']['volume']
+        if 'issue' in work_data['message']:
+            volume += f"({work_data['message']['issue']})"
+
+        insert_journal_work_data(work_data['message']['DOI'], pubname,
+                                 volume, work_data['message']['page'],
+                                 **kwargs)
+    elif typ == "book-chapter":
+        pass
+    elif (typ == "proceedings-article" or (typ == "posted_content" and
+          work_data['message']['subtype'] == "preprint")):
+        pass
+    else:
+        kwargs['output'].write(
+                f"**UNKNOWN CrossRef TYPE: {typ} for work DOI: "
+                f"{work_data['message']['DOI']}'\n")
 
 
 def find_citations(**kwargs):
@@ -150,9 +172,10 @@ def find_citations(**kwargs):
                     continue
 
                 # add author data for the citing work
-                insert_authors(work_data, output=kwargs['output'])
+                insert_authors(work_data, output=kwargs['output'], conn=conn)
                 # add type-specific data for the work
-                insert_publication_data(work_data, output=kwargs['output'])
+                insert_publication_data(work_data, output=kwargs['output'],
+                                        conn=conn)
 
             next_cursor = j['message']['next-cursor']
 
