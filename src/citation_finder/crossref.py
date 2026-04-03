@@ -82,7 +82,7 @@ def insert_publication_data(work_data, **kwargs):
                                       work_data['message']['page'], *kwargs)
     elif typ == "journal-article":
         if ('container-title' not in work_data['message'] or
-                len(work_data['message']['container_title']) == 0):
+                len(work_data['message']['container-title']) == 0):
             pubname = work_data['message']['short-container-title'][0]
         else:
             pubname = work_data['message']['container-title'][0]
@@ -98,7 +98,7 @@ def insert_publication_data(work_data, **kwargs):
     elif (typ == "proceedings-article" or (typ == "posted_content" and
           work_data['message']['subtype'] == "preprint")):
         if ('container-title' not in work_data['message'] or
-                len(work_data['message']['container_title']) == 0):
+                len(work_data['message']['container-title']) == 0):
             pubname = work_data['message']['short-container-title'][0]
         else:
             pubname = work_data['message']['container-title'][0]
