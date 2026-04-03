@@ -1,6 +1,5 @@
 import importlib
 import os
-import psycopg2
 import sys
 
 from datetime import datetime
@@ -10,6 +9,7 @@ from .cache import clean_cache
 from .configure import configure
 from .doi_list import get_doi_list
 from .local_settings import config
+from .utils import db_connect
 
 
 def on_crash(exctype, value, traceback):
@@ -159,18 +159,20 @@ def main():
             "output." + datetime.now().strftime("%Y%m%d%H%M"))
     with open(output_file, "w") as settings['output']:
         print(f"Output file is {output_file}")
+        conn, err = db_connect()
+        if conn is None:
+            print(f"Database connection error: '{err}'")
+            sys.exit(1)
+
         try:
-            db = config['citation-database']
-            conn = psycopg2.connect(user=db['user'], password=db['password'],
-                                    host=db['host'], dbname=db['dbname'],
-                                    connect_timeout=30)
             cursor = conn.cursor()
+            schemaname = config['citation-database']['schemaname']
             cursor.execute((
                     "create table if not exists {}.{} (like {}."
                     "template_data_citations including all)").format(
-                    db['schemaname'],
+                    schemaname,
                     config['doi-groups'][settings['doi-group']]['db-table'],
-                    db['schemaname']))
+                    schemaname))
             conn.commit()
             if 'doi-list' not in settings:
                 settings['doi-list'] = (
@@ -190,9 +192,7 @@ def main():
         except Exception as err:
             print(f"An error occured: '{err}'")
         finally:
-            if 'conn' in locals():
-                conn.close()
-
+            conn.close()
             if not settings['keep-json']:
                 for file in Path(
                         config['temporary-directory-path']).glob("*.json"):

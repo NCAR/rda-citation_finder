@@ -1,3 +1,8 @@
+import psycopg2
+
+from .local_settings import config
+
+
 def convert_unicodes(s):
     s = (s.replace(r"\u00a0", " ")
           .replace(r"\u2010", "-")
@@ -25,6 +30,18 @@ def unicode_escape(s):
         return convert_unicodes(escaped_string)
 
     return escaped_string
+
+
+def db_connect():
+    try:
+        conn = psycopg2.connect(
+                user=config['citation-database']['user'],
+                password=config['citation-database']['password'],
+                host=config['citation-database']['host'],
+                dbname=config['citation-database']['dbname'])
+        return (conn, None)
+    except Exception as err:
+        return (None, err)
 
 
 def add_authors_to_db(author_list, ident, db_conn):

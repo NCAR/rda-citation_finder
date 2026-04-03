@@ -1,6 +1,5 @@
 import json
 import os
-import psycopg2
 import requests
 import sys
 import time
@@ -15,7 +14,7 @@ from .inserts import (insert_citation,
                       insert_work_author,
                       inserted_doi_data)
 from .local_settings import config
-from .utils import convert_unicodes
+from .utils import convert_unicodes, db_connect
 
 
 API_URL = "https://api.eventdata.crossref.org/v1/events"
@@ -113,11 +112,8 @@ def insert_publication_data(work_data, **kwargs):
 
 
 def find_citations(**kwargs):
-    try:
-        db = config['citation-database']
-        conn = psycopg2.connect(user=db['user'], password=db['password'],
-                                host=db['host'], dbname=db['dbname'])
-    except Exception as err:
+    conn, err = db_connect()
+    if conn is None:
         kwargs['output'].write(
                 f"***DATABASE ERROR from crossref.find_citations(): '{err}'\n")
         sys.exit(1)

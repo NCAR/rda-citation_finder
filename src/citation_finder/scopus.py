@@ -1,6 +1,5 @@
 import json
 import os
-import psycopg2
 import requests
 import sys
 import time
@@ -9,6 +8,7 @@ from pathlib import Path
 
 from .inserts import insert_citation
 from .local_settings import config
+from .utils import db_connect
 
 
 API_URL = "https://api.elsevier.com/content/search/scopus"
@@ -16,9 +16,10 @@ API_URL = "https://api.elsevier.com/content/search/scopus"
 
 def get_publisher_fixups(**kwargs):
     try:
-        db = config['citation-database']
-        conn = psycopg2.connect(user=db['user'], password=db['password'],
-                                host=db['host'], dbname=db['dbname'])
+        conn, err = db_connect()
+        if conn is None:
+            raise RuntimeError(err)
+
         cursor = conn.cursor()
         cursor.execute(
                 "select original_name, fixup from citation.publisher_fixups")

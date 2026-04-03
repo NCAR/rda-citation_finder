@@ -1,25 +1,22 @@
 import json
-import psycopg2
 import requests
 
 from .local_settings import config
+from .utils import db_connect
 
 
 def get_doi_list_from_db(doi_group, **kwargs):
     kwargs['output'].write("    filling list from a database ...\n")
-    try:
-        db = config['citation-database']
-        conn = psycopg2.connect(user=db['user'], password=db['password'],
-                                host=db['host'], dbname=db['dbname'])
-        cursor = conn.cursor()
-        cursor.execute(config['doi-groups'][doi_group]['doi-query']['db'])
-        doi_list = cursor.fetchall()
-        kwargs['output'].write(
-                f"    ... found {len(doi_list)} DOIs.\n")
-        return doi_list
-    finally:
-        if 'conn' in locals():
-            conn.close()
+    conn, err = db_connect()
+    if conn is None:
+        return []
+
+    cursor = conn.cursor()
+    cursor.execute(config['doi-groups'][doi_group]['doi-query']['db'])
+    doi_list = cursor.fetchall()
+    conn.close()
+    kwargs['output'].write(
+            f"    ... found {len(doi_list)} DOIs.\n")
 
 
 def json_parse(response, json_path):
