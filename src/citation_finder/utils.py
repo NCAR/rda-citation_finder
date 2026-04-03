@@ -32,6 +32,15 @@ def unicode_escape(s):
     return escaped_string
 
 
+def repair_string(s):
+    parts = s.split("\\n")
+    if len(parts) > 1:
+        parts = [e.strip() for e in parts]
+        s = " ".join(parts)
+
+    return s.replace("\\/", "/").replace("\\", "\\\\")
+
+
 def db_connect():
     try:
         conn = psycopg2.connect(
