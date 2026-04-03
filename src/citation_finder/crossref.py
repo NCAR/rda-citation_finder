@@ -8,13 +8,14 @@ from pathlib import Path
 
 from .inserts import (insert_citation,
                       insert_book_chapter_work_data,
+                      insert_general_work_data,
                       insert_journal_work_data,
                       insert_proceedings_work_data,
                       insert_source,
                       insert_work_author,
                       inserted_doi_data)
 from .local_settings import config
-from .utils import convert_unicodes, db_connect
+from .utils import convert_unicodes, db_connect, repair_string
 
 
 API_URL = "https://api.eventdata.crossref.org/v1/events"
@@ -79,6 +80,7 @@ def insert_publication_data(work_data, **kwargs):
         insert_book_chapter_work_data(work_data['message']['DOI'],
                                       work_data['message']['ISBN'],
                                       work_data['message']['page'], *kwargs)
+        return "C"
     elif typ == "journal-article":
         if ('container-title' not in work_data['message'] or
                 len(work_data['message']['container-title']) == 0):
@@ -94,6 +96,7 @@ def insert_publication_data(work_data, **kwargs):
         insert_journal_work_data(work_data['message']['DOI'], pubname,
                                  volume, work_data['message']['page'],
                                  **kwargs)
+        return "J"
     elif (typ == "proceedings-article" or
             (typ == "posted_content" and 'subtype' in work_data['message'] and
              work_data['message']['subtype'] == "preprint")):
@@ -108,10 +111,12 @@ def insert_publication_data(work_data, **kwargs):
                  work_data['message'] else "")
         insert_proceedings_work_data(work_data['message']['DOI'], pubname, "",
                                      pages, **kwargs)
-    else:
-        kwargs['output'].write(
-                f"**UNKNOWN CrossRef TYPE: {typ} for work DOI: "
-                f"{work_data['message']['DOI']}'\n")
+        return "P"
+
+    kwargs['output'].write(
+            f"**UNKNOWN CrossRef TYPE: {typ} for work DOI: "
+            f"{work_data['message']['DOI']}'\n")
+    return None
 
 
 def find_citations(**kwargs):
@@ -199,8 +204,46 @@ def find_citations(**kwargs):
                 # add author data for the citing work
                 insert_authors(work_data, output=kwargs['output'], conn=conn)
                 # add type-specific data for the work
-                insert_publication_data(work_data, output=kwargs['output'],
-                                        conn=conn)
+                pubtype = insert_publication_data(
+                        work_data, output=kwargs['output'], conn=conn)
+                if pubtype is None:
+                    continue
+
+                # add general data about the work
+                message = work_data['message']
+                pubdate = {}
+                if ('published' in message and 'date-parts' in
+                        message['published'] and
+                        len(message['published']['date-parts'][0]) >= 2):
+                    dp = message['published']['date-parts'][0]
+                    pubdate.update({'year': dp[0], 'month': dp[1]})
+
+                if (len(pubdate) == 0 and 'published-print' in
+                        message and 'date-parts' in
+                        message['published-print'] and
+                        len(message['published-print']['date-parts'][0]) >= 2):
+                    dp = message['published-print']['date-parts'][0]
+                    pubdate.update({'year': dp[0], 'month': dp[1]})
+
+                if (len(pubdate) == 0 and 'published-online' in
+                        message and 'date-parts' in
+                        message['published-online'] and
+                        len(message['published-online']['date-parts'][0])
+                        >= 2):
+                    dp = message['published-online']['date-parts'][0]
+                    pubdate.update({'year': dp[0], 'month': dp[1]})
+
+                if len(pubdate) > 0:
+                    title = convert_unicodes(
+                            repair_string(message['title'][0]))
+                    insert_general_work_data(
+                            work_doi, title, pubdate, pubtype,
+                            message['publisher'], output=kwargs['output'],
+                            conn=conn)
+                else:
+                    kwargs['output'].write(
+                            "***NO OR BAD PUBLISHER DATE for work DOI "
+                            f"{work_doi} citing {doi}\n")
 
             next_cursor = j['message']['next-cursor']
 
