@@ -22,7 +22,8 @@ API_URL = "https://api.eventdata.crossref.org/v1/events"
 
 
 def get_work_data(work_doi):
-    cache_file = os.path.join(config['temporary-directory-path'], "cache",
+    cache_file = os.path.join(config['temporary-directory-path'],
+                              "citation_cache",
                               work_doi.replace("/", "@@") + ".crossref.json")
     if not os.path.exists(cache_file):
         try:
