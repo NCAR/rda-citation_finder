@@ -94,8 +94,9 @@ def insert_publication_data(work_data, **kwargs):
         insert_journal_work_data(work_data['message']['DOI'], pubname,
                                  volume, work_data['message']['page'],
                                  **kwargs)
-    elif (typ == "proceedings-article" or (typ == "posted_content" and
-          work_data['message']['subtype'] == "preprint")):
+    elif (typ == "proceedings-article" or
+            (typ == "posted_content" and 'subtype' in work_data['message'] and
+             work_data['message']['subtype'] == "preprint")):
         if ('container-title' not in work_data['message'] or
                 len(work_data['message']['container-title']) == 0):
             pubname = work_data['message']['short-container-title'][0]
@@ -103,8 +104,10 @@ def insert_publication_data(work_data, **kwargs):
             pubname = work_data['message']['container-title'][0]
 
         pubname = pubname.replace("\\", "\\\\")
+        pages = (work_data['message']['page'] if 'page' in
+                 work_data['message'] else "")
         insert_proceedings_work_data(work_data['message']['DOI'], pubname, "",
-                                     work_data['message']['page'], **kwargs)
+                                     pages, **kwargs)
     else:
         kwargs['output'].write(
                 f"**UNKNOWN CrossRef TYPE: {typ} for work DOI: "
