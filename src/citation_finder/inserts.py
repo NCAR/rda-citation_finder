@@ -193,6 +193,7 @@ def insert_proceedings_work_data(work_doi, pubname, volume, pages, **kwargs):
                 "case when length(excluded.pages) > length(proceedings_works."
                 "pages) then excluded.pages else proceedings_works.pages end",
                 (work_doi, pubname, volume, pages))
+        kwargs['conn'].commit()
     except Exception as err:
         kwargs['output'].write(
                 f"Error while inserting proceedings data ({work_doi}, "
