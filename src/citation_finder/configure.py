@@ -52,6 +52,7 @@ def configure(settings_file):
         lines = f.read().splitlines()
 
     for line in lines:
+        line = line.strip()
         if len(line) > 0 and line[0] != '#':
             idx = line.find("=")
             if idx < 0:
