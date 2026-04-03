@@ -58,7 +58,7 @@ def inserted_doi_data(data_doi, publisher, asset_type, **kwargs):
         return False
 
 
-def insert_works_author(pid, author, sequence, source, **kwargs):
+def insert_work_author(pid, author, sequence, source, **kwargs):
     columns = ["id", "id_type", "last_name", "first_name", "middle_name",
                "sequence"]
     values = ["%s"] * len(columns)
@@ -132,3 +132,26 @@ def insert_works_author(pid, author, sequence, source, **kwargs):
         kwargs['output'].write(
                 "Error while inserting author ({}): '{}' from {}"
                 .format(", ".join(params), err, source))
+
+
+def insert_journal_work_data(work_doi, pubname, volume, pages, **kwargs):
+    try:
+        cursor = kwargs['conn'].cursor()
+        cursor.execute(
+                f"insert into {config['citation-database']['schemaname']}."
+                "journal_works (doi, pub_name, volume, pages) values "
+                "(%s, %s, %s, %s) on conflict on constraint "
+                "journal_works_pkey do update set pub_name = case when "
+                "length(excluded.pub_name) > length(journal_works.pub_name) "
+                "then excluded.pub_name else journal_works.pub_name end, "
+                "volume = case when length(excluded.volume) > length("
+                "journal_works.volume) then excluded.volume else "
+                "journal_works.volume end, pages = case when length("
+                "excluded.pages) > length(journal_works.pages) then excluded."
+                "pages else journal_works.pages end",
+                (work_doi, pubname, volume, pages))
+        kwargs['conn'].commit()
+    except Exception as err:
+        kwargs['output'].write(
+                f"Error while inserting journal data ({work_doi}, {pubname}, "
+                f"{volume}, {pages}): '{err}'\n")
