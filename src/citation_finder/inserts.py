@@ -134,6 +134,26 @@ def insert_work_author(pid, author, sequence, source, **kwargs):
                 .format(", ".join(params), err, source))
 
 
+def insert_book_chapter_work_data(work_doi, isbn, pages, **kwargs):
+    try:
+        cursor = kwargs['conn'].cursor()
+        cursor.execute(
+                f"insert into {config['citation-database']['schemaname']}."
+                "book_chapter_works (doi, pages, isbn) values (%s, %s, %s) "
+                "on conflict on constraint book_chapter_works_pkey do update "
+                "set pages = case when length(excluded.pages) > length("
+                "book_chapter_works.pages) then excluded.pages else "
+                "book_chapter_works.pages end, isbn = case when length("
+                "excluded.isbn) > length(book_chapter_works.isbn) then "
+                "excluded.isbn else book_chapter_works.isbn end",
+                (work_doi, pages, isbn))
+        kwargs['conn'].commit()
+    except Exception as err:
+        kwargs['output'].write(
+                f"Error while inserting book chapter data ({work_doi}, "
+                f"{isbn}, {pages}): '{err}'\n")
+
+
 def insert_journal_work_data(work_doi, pubname, volume, pages, **kwargs):
     try:
         cursor = kwargs['conn'].cursor()
@@ -155,3 +175,25 @@ def insert_journal_work_data(work_doi, pubname, volume, pages, **kwargs):
         kwargs['output'].write(
                 f"Error while inserting journal data ({work_doi}, {pubname}, "
                 f"{volume}, {pages}): '{err}'\n")
+
+
+def insert_proceedsing_work_data(work_doi, pubname, volume, pages, **kwargs):
+    try:
+        cursor = kwargs['conn'].cursor()
+        cursor.execute(
+                f"insert into {config['citation-database']['schemaname']}."
+                "proceedings_works (doi, pub_name, volume, pages) values "
+                "(%s, %s, %s, %s) on conflict on constraint "
+                "proceedings_works_pkey do update set pub_name = case when "
+                "length(excluded.pub_name) > length("
+                "proceedings_works.pub_name) then excluded.pub_name else "
+                "proceedings_works.pub_name end, volume = case when length("
+                "excluded.volume) > length(proceedings_works.volume) then "
+                "excluded.volume else proceedings_works.volume end, pages = "
+                "case when length(excluded.pages) > length(proceedings_works."
+                "pages) then excluded.pages else proceedings_works.pages end",
+                (work_doi, pubname, volume, pages))
+    except Exception as err:
+        kwargs['output'].write(
+                f"Error while inserting proceedings data ({work_doi}, "
+                f"{pubname}, {volume}, {pages}): '{err}'\n")
