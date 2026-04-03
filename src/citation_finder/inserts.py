@@ -198,3 +198,27 @@ def insert_proceedings_work_data(work_doi, pubname, volume, pages, **kwargs):
         kwargs['output'].write(
                 f"Error while inserting proceedings data ({work_doi}, "
                 f"{pubname}, {volume}, {pages}): '{err}'\n")
+
+
+def insert_general_work_data(work_doi, title, pubdate, pubtype, publisher,
+                             **kwargs):
+    title = title.replace('\\\\"', '"')
+    title = title.replace('\\"', '"')
+    try:
+        cursor = kwargs['conn'].cursor()
+        cursor.execute(
+                f"insert into {config['citation-database']['schemaname']}."
+                "works (doi, title, pub_year, type, publisher, pub_month) "
+                "values (%s, %s, %s, %s, %s, %s) on conflict on constraint "
+                "works_pkey do update set title = case when length(excluded."
+                "title) > length(works.title) then excluded.title else works."
+                "title end, publisher = case when length(excluded.publisher) "
+                "> length(works.publisher) then excluded.publisher else works."
+                "publisher end",
+                (work_doi, title, pubdate['year'], pubtype, publisher,
+                 pubdate['month']))
+        kwargs['conn'].commit()
+    except Exception as err:
+        kwargs['output'].write(
+                f"Error while inserting general work data ({work_doi}, "
+                f"{title}, {pubdate}, {pubtype}, {publisher}): '{err}'\n")
