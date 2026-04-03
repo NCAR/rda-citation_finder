@@ -52,7 +52,7 @@ def configure(settings_file):
         lines = f.read().splitlines()
 
     for line in lines:
-        if line[0] != '#':
+        if len(line) > 0 and line[0] != '#':
             idx = line.find("=")
             if idx < 0:
                 raise RuntimeError("bad setting on line '{}'".format(line))
