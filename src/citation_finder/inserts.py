@@ -177,7 +177,7 @@ def insert_journal_work_data(work_doi, pubname, volume, pages, **kwargs):
                 f"{volume}, {pages}): '{err}'\n")
 
 
-def insert_proceedsing_work_data(work_doi, pubname, volume, pages, **kwargs):
+def insert_proceedings_work_data(work_doi, pubname, volume, pages, **kwargs):
     try:
         cursor = kwargs['conn'].cursor()
         cursor.execute(
