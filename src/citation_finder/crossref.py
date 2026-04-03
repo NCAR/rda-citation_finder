@@ -8,7 +8,9 @@ import time
 from pathlib import Path
 
 from .inserts import (insert_citation,
+                      insert_book_chapter_work_data,
                       insert_journal_work_data,
+                      insert_proceedings_work_data,
                       insert_source,
                       insert_work_author,
                       inserted_doi_data)
@@ -65,9 +67,24 @@ def insert_authors(work_data, **kwargs):
 
 def insert_publication_data(work_data, **kwargs):
     typ = work_data['message']['type']
-    if typ == "journal-article":
-        pubname = (work_data['message']['container-title']
-                   .replace("\\", "\\\\"))
+    if typ == "book-chapter":
+        if 'ISBN' not in work_data['message']:
+            kwargs['output'].write(
+                    "Error obtaining CrossRef ISBN for book chapter (DOI: "
+                    f"{work_data['message']['DOI']}\n")
+            return
+
+        insert_book_chapter_work_data(work_data['message']['DOI'],
+                                      work_data['message']['ISBN'],
+                                      work_data['message']['page'], *kwargs)
+    elif typ == "journal-article":
+        if ('container-title' not in work_data['message'] or
+                len(work_data['message']['container_title']) == 0):
+            pubname = work_data['message']['short-container-title'][0]
+        else:
+            pubname = work_data['message']['container-title'][0]
+
+        pubname = pubname.replace("\\", "\\\\")
         volume = work_data['message']['volume']
         if 'issue' in work_data['message']:
             volume += f"({work_data['message']['issue']})"
@@ -75,11 +92,17 @@ def insert_publication_data(work_data, **kwargs):
         insert_journal_work_data(work_data['message']['DOI'], pubname,
                                  volume, work_data['message']['page'],
                                  **kwargs)
-    elif typ == "book-chapter":
-        pass
     elif (typ == "proceedings-article" or (typ == "posted_content" and
           work_data['message']['subtype'] == "preprint")):
-        pass
+        if ('container-title' not in work_data['message'] or
+                len(work_data['message']['container_title']) == 0):
+            pubname = work_data['message']['short-container-title'][0]
+        else:
+            pubname = work_data['message']['container-title'][0]
+
+        pubname = pubname.replace("\\", "\\\\")
+        insert_proceedings_work_data(work_data['message']['DOI'], pubname, "",
+                                     work_data['message']['page'], **kwargs)
     else:
         kwargs['output'].write(
                 f"**UNKNOWN CrossRef TYPE: {typ} for work DOI: "
