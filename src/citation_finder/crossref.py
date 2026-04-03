@@ -37,7 +37,9 @@ def get_work_data(work_doi):
             return None
 
     try:
-        j = json.load(cache_file)
+        with open(cache_file, "r") as f:
+            j = json.load(f)
+
         return j
     except Exception:
         return None
