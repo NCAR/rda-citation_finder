@@ -119,12 +119,12 @@ def reset_new_flag(**kwargs):
         cursor = kwargs['conn'].cursor()
         cursor.execute(
                 f"update {config['citation-database']['schemaname']}."
-                f"{config[kwargs['doi_group']]['doi-groups']['db-table']} set "
+                f"{config['doi-groups'][kwargs['doi_group']]['db-table']} set "
                 "new_flag = '0' where new_flag = '1'")
         kwargs['conn'].commit()
     except Exception as err:
         kwargs['output'].write(
                 f"Error updating 'new_flag' in "
                 f"{config['citation-database']['schemaname']}."
-                f"{config[kwargs['doi_group']]['doi-groups']['db-table']}: "
+                f"{config['doi-groups'][kwargs['doi_group']]['db-table']}: "
                 f"'{err}'\n")
