@@ -193,7 +193,7 @@ def find_citations(**kwargs):
                 if not inserted_doi_data(doi, publisher, asset_type, **kwargs):
                     continue
 
-                if kwargs['no-works'] or not new_entry:
+                if kwargs['no_works'] or not new_entry:
                     continue
 
                 work_data = get_work_data(work_doi)
