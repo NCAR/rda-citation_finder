@@ -90,7 +90,7 @@ def regenerate_dataset_descriptions(**kwargs):
         cursor.execute(
                 "select v.dsid, count(c.new_flag) from "
                 f"{config['citation-database']['schemaname']}."
-                f"{config[kwargs['doi_group']]['doi-groups']['db-table']} as "
+                f"{config['doi-groups'][kwargs['doi_group']]['db-table']} as "
                 "c left join (select distinct dsid, doi from dssdb.dsvrsn) as "
                 "v on v.doi ilike c.doi_data where c.new_flag = '1' group by "
                 "v.dsid")
@@ -110,7 +110,7 @@ def regenerate_dataset_descriptions(**kwargs):
 
     except Exception as err:
         kwargs['output'].write(
-                f"Error will obtaining list of new {kwargs['service']} "
+                f"Error while obtaining list of new {kwargs['service']} "
                 f"citations: '{err}'\n")
 
 
