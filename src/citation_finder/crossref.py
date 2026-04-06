@@ -15,7 +15,11 @@ from .inserts import (insert_citation,
                       insert_work_author,
                       inserted_doi_data)
 from .local_settings import config
-from .utils import convert_unicodes, db_connect, repair_string
+from .utils import (convert_unicodes,
+                    db_connect,
+                    regenerate_dataset_descriptions,
+                    repair_string,
+                    reset_new_flag)
 
 
 API_URL = "https://api.eventdata.crossref.org/v1/events"
@@ -120,8 +124,8 @@ def insert_publication_data(work_data, **kwargs):
 
 
 def find_citations(**kwargs):
-    conn, err = db_connect()
-    if conn is None:
+    kwargs['conn'], err = db_connect()
+    if kwargs['conn'] is None:
         kwargs['output'].write(
                 f"***DATABASE ERROR from crossref.find_citations(): '{err}'\n")
         sys.exit(1)
@@ -181,13 +185,11 @@ def find_citations(**kwargs):
                 work_doi = event['subj_id'].replace("\\/", "/")
                 work_doi = work_doi.split("doi.org/")[-1]
                 success, new_entry = insert_citation(
-                        doi, work_doi, "CrossRef", **kwargs,
-                        conn=conn)
+                        doi, work_doi, "CrossRef", **kwargs)
                 if not success:
                     continue
 
-                insert_source(work_doi, doi, "CrossRef", **kwargs,
-                              conn=conn)
+                insert_source(work_doi, doi, "CrossRef", **kwargs)
                 if not inserted_doi_data(doi, publisher, asset_type, **kwargs):
                     continue
 
@@ -202,10 +204,9 @@ def find_citations(**kwargs):
                     continue
 
                 # add author data for the citing work
-                insert_authors(work_data, output=kwargs['output'], conn=conn)
+                insert_authors(work_data, **kwargs)
                 # add type-specific data for the work
-                pubtype = insert_publication_data(
-                        work_data, output=kwargs['output'], conn=conn)
+                pubtype = insert_publication_data(work_data, **kwargs)
                 if pubtype is None:
                     continue
 
@@ -238,8 +239,7 @@ def find_citations(**kwargs):
                             repair_string(message['title'][0]))
                     insert_general_work_data(
                             work_doi, title, pubdate, pubtype,
-                            message['publisher'], output=kwargs['output'],
-                            conn=conn)
+                            message['publisher'], **kwargs)
                 else:
                     kwargs['output'].write(
                             "***NO OR BAD PUBLISHER DATE for work DOI "
@@ -247,5 +247,8 @@ def find_citations(**kwargs):
 
             next_cursor = j['message']['next-cursor']
 
-    if 'conn' in locals():
-        conn.close()
+    if kwargs['doi_group'] == "rda":
+        regenerate_dataset_descriptions(service="CrossRef", **kwargs)
+
+    reset_new_flag(**kwargs)
+    kwargs['conn'].close()
