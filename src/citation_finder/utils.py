@@ -1,4 +1,5 @@
 import psycopg2
+import requests
 
 from .local_settings import config
 
@@ -81,3 +82,49 @@ def add_authors_to_db(author_list, ident, db_conn):
         db_conn.commit()
     else:
         print("*** NO INSERTABLE AUTHORS for '{}'".format(ident))
+
+
+def regenerate_dataset_descriptions(**kwargs):
+    try:
+        cursor = kwargs['conn'].cursor()
+        cursor.execute(
+                "select v.dsid, count(c.new_flag) from "
+                f"{config['citation-database']['schemaname']}."
+                f"{config[kwargs['doi_group']]['doi-groups']['db-table']} as "
+                "c left join (select distinct dsid, doi from dssdb.dsvrsn) as "
+                "v on v.doi ilike c.doi_data where c.new_flag = '1' group by "
+                "v.dsid")
+        res = cursor.fetchall()
+        for e in res:
+            kwargs['output'].write(
+                    f"Found {e[1]} new {kwargs['service']} data citations for "
+                    f"{e[0]}\n")
+            try:
+                response = requests.get(
+                        f"https://gdex.ucar.edu/redeploy/dsgen{e[0]}")
+                response.raise_for_status()
+            except Exception as err:
+                kwargs['output'].write(
+                        f"Error while regenerating {e[0]} (service: "
+                        f"{kwargs['service']}): '{err}'\n")
+
+    except Exception as err:
+        kwargs['output'].write(
+                f"Error will obtaining list of new {kwargs['service']} "
+                f"citations: '{err}'\n")
+
+
+def reset_new_flag(**kwargs):
+    try:
+        cursor = kwargs['conn'].cursor()
+        cursor.execute(
+                f"update {config['citation-database']['schemaname']}."
+                f"{config[kwargs['doi_group']]['doi-groups']['db-table']} set "
+                "new_flag = '0' where new_flag = '1'")
+        kwargs['conn'].commit()
+    except Exception as err:
+        kwargs['output'].write(
+                f"Error updating 'new_flag' in "
+                f"{config['citation-database']['schemaname']}."
+                f"{config[kwargs['doi_group']]['doi-groups']['db-table']}: "
+                f"'{err}'\n")
