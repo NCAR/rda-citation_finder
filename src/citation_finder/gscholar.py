@@ -13,6 +13,8 @@ from datetime import datetime, timedelta
 from multiprocessing import Manager, Process
 
 
+API_URL = "https://serpapi.com/search"
+
 ignore_words = {
     "a", "an", "and", "from", "in", "of", "on", "that", "the", "them", "they",
     "this", "those", "to",
@@ -87,7 +89,7 @@ def process_id(asset_id, cursor):
             doi_group = "ucar"
 
         if asset_type == "text":
-            print(config['services']['gscholar']['api-url'] + "?engine=google_scholar&q=" + ("+").join(query_terms) + "&api_key=" + config['services']['gscholar']['api-key'])
+            print(API_URL + "?engine=google_scholar&q=" + ("+").join(query_terms) + "&api_key=" + config['services']['gscholar']['api-key'])
             serp_param = "cites"
         else:
             serp_param = "q"
@@ -106,9 +108,10 @@ def start_translation_server():
         time.sleep(15)
         return o.stdout.decode("utf-8")[0:12]
     else:
-        print(("Error starting translation server: '{}'")
-              .format(o.stderr.decode("utf-8")))
-        sys.exit(1)
+        err = o.stderr.decode("utf-8")
+        err = f"Error starting translation server: '{err}'"
+        print(err)
+        raise RuntimeError(err)
 
 
 def check_for_translation_server():
@@ -237,9 +240,8 @@ def main():
         print(config['doi-groups'][doi_group]['db-table'])
         print(config)
         print(serp_param)
-        request_base = (config['services']['gscholar']['api-url'] +
-                        "?engine=google_scholar&" + serp_param + "=" +
-                        "+".join(qterms) + "&api_key=" +
+        request_base = (API_URL + "?engine=google_scholar&" + serp_param + "="
+                        + "+".join(qterms) + "&api_key=" +
                         config['services']['gscholar']['api-key'] +
                         "&num=20&start=")
         current_page = 0
