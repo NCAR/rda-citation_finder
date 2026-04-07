@@ -36,6 +36,8 @@ def parse_args(args):
         elif args[n] == "-s":
             n += 1
             settings['delimiter'] = args[n]
+        elif args[n] == "-t":
+            DEBUG = True
         elif args[n] == "--only-services":
             n += 1
             for service in args[n].split(","):
@@ -121,6 +123,7 @@ def main():
             "                comma-delimited list of services to ignore\n"
             "-s DELIMITER    delimiter string for DOI_DATA (default is a "
             "semicolon)\n"
+            "-t              turn on traceback for abnormal exit\n"
         ))
         sys.exit(1)
 
