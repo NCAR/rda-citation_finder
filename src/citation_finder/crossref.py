@@ -126,9 +126,8 @@ def insert_publication_data(work_data, **kwargs):
 def find_citations(**kwargs):
     kwargs['conn'], err = db_connect()
     if kwargs['conn'] is None:
-        kwargs['output'].write(
-                f"***DATABASE ERROR from crossref.find_citations(): '{err}'\n")
-        sys.exit(1)
+        err = f"***DATABASE ERROR from crossref.find_citations(): '{err}'")
+        raise RuntimeError(err)
 
     params = {'source': "crossref", 'obj-id': "", 'cursor': ""}
     for doi, publisher, asset_type in kwargs['doi_list']:

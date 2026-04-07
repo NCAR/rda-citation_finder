@@ -161,8 +161,9 @@ def main():
         print(f"Output file is {output_file}")
         conn, err = db_connect()
         if conn is None:
-            print(f"Database connection error: '{err}'")
-            sys.exit(1)
+            err = f"Database connection error: '{err}'"
+            print(err)
+            raise RuntimeError(err)
 
         try:
             cursor = conn.cursor()

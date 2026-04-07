@@ -25,8 +25,9 @@ def get_publisher_fixups(**kwargs):
                 "select original_name, fixup from citation.publisher_fixups")
         return cursor.fetchall()
     except Exception as err:
-        kwargs['output'].write(f"***UNABLE TO GET PUBLISHER FIXUPS: '{err}'\n")
-        sys.exit(1)
+        err = f"***UNABLE TO GET PUBLISHER FIXUPS: '{err}'")
+        kwargs['output'].write(f"{err}\n")
+        raise RuntimeError(err)
     finally:
         if 'conn' in locals():
             conn.close()
