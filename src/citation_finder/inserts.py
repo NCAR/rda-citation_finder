@@ -86,7 +86,7 @@ def insert_work_author(pid, author, sequence, source, **kwargs):
 
     insert = (
             f"insert into {config['citation-database']['schemaname']}."
-            f"works_authors ({', '.join[columns]}) values "
+            f"works_authors ({', '.join(columns)}) values "
             f"({', '.join(values)})")
     if 'on_conflict' in locals():
         insert += ", ".join(on_conflict)
