@@ -81,7 +81,7 @@ def insert_publication_data(work_data, **kwargs):
             return
 
         insert_book_chapter_work_data(work_data['message']['DOI'],
-                                      work_data['message']['ISBN'],
+                                      work_data['message']['ISBN'][0],
                                       work_data['message']['page'], **kwargs)
         return "C"
     elif typ == "journal-article":
