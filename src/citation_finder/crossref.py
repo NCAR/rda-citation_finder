@@ -52,6 +52,9 @@ def insert_authors(work_data, **kwargs):
     pid = {'id': work_data['message']['DOI'], 'type': "DOI"}
     sequence = 0
     for m_author in work_data['message']['author']:
+        if not {'family', 'given'} <= m_author.keys():
+            continue
+
         family = convert_unicodes(m_author['family'])
         given = convert_unicodes(m_author['given']).replace(".-", ". -")
         if len(given) > 0:
