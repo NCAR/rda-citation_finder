@@ -1,7 +1,6 @@
 import json
 import os
 import requests
-import sys
 import time
 
 from pathlib import Path
@@ -126,7 +125,7 @@ def insert_publication_data(work_data, **kwargs):
 def find_citations(**kwargs):
     kwargs['conn'], err = db_connect()
     if kwargs['conn'] is None:
-        err = f"***DATABASE ERROR from crossref.find_citations(): '{err}'")
+        err = f"***DATABASE ERROR from crossref.find_citations(): '{err}'"
         raise RuntimeError(err)
 
     params = {'source': "crossref", 'obj-id': "", 'cursor': ""}
