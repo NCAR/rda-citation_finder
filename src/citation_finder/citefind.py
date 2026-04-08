@@ -37,6 +37,7 @@ def parse_args(args):
             n += 1
             settings['delimiter'] = args[n]
         elif args[n] == "-t":
+            global DEBUG
             DEBUG = True
         elif args[n] == "--only-services":
             n += 1
