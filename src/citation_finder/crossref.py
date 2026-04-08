@@ -227,8 +227,8 @@ def find_citations(**kwargs):
                     elif len(dp) == 1:
                         pubdate.update({'year': dp[0], 'month': 0})
                         kwargs['output'].write(
-                                "***MISSING PUBLICATION MONTH for work DOI "
-                                f"{work_doi} citing {doi}\n")
+                                "        Warning: missing publication month "
+                                f"for work DOI {work_doi} citing {doi}\n")
 
                 if (len(pubdate) == 0 and 'published-print' in
                         message and 'date-parts' in
