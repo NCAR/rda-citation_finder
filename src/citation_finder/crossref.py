@@ -220,10 +220,15 @@ def find_citations(**kwargs):
                 message = work_data['message']
                 pubdate = {}
                 if ('published' in message and 'date-parts' in
-                        message['published'] and
-                        len(message['published']['date-parts'][0]) >= 2):
+                        message['published']):
                     dp = message['published']['date-parts'][0]
-                    pubdate.update({'year': dp[0], 'month': dp[1]})
+                    if len(dp) >= 2:
+                        pubdate.update({'year': dp[0], 'month': dp[1]})
+                    elif len(dp) == 1:
+                        pubdate.update({'year': dp[0], 'month': 0})
+                        kwargs['output'].write(
+                                "***MISSING PUBLICATION MONTH for work DOI "
+                                f"{work_doi} citing {doi}\n")
 
                 if (len(pubdate) == 0 and 'published-print' in
                         message and 'date-parts' in
