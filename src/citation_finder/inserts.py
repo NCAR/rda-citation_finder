@@ -130,7 +130,7 @@ def insert_work_author(pid, author, sequence, source, **kwargs):
                     f"{author['middle']} {author['family']}): '{err}'\n")
     except Exception as err:
         kwargs['output'].write(
-                "Error while inserting author ({}): '{}' from {}"
+                "Error while inserting author ({}): '{}' from {}\n"
                 .format(", ".join(params), err, source))
 
 
