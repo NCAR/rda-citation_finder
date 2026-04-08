@@ -63,7 +63,7 @@ def insert_work_author(pid, author, sequence, source, **kwargs):
                "sequence"]
     values = ["%s"] * len(columns)
     params = [pid['id'], pid['type'], author['family'], author['given'],
-              author['middle'], sequence]
+              author['middle'], str(sequence)]
     if source == "Open Library" or source == "CrossRef":
         on_conflict = [
                 "on conflict on constraint works_authors_pkey do update set "
