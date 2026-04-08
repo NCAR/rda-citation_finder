@@ -78,6 +78,7 @@ def insert_work_author(pid, author, sequence, source, **kwargs):
 
     if 'orcid_id' in author:
         columns.append("orcid_id")
+        values.append("%s")
         params.append(author['orcid_id'])
         if 'on_conflict' in locals():
             on_conflict.append(
