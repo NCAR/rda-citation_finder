@@ -96,9 +96,10 @@ def insert_publication_data(work_data, **kwargs):
         if 'issue' in work_data['message']:
             volume += f"({work_data['message']['issue']})"
 
+        pages = (work_data['message']['page'] if 'page' in work_data['message']
+                 else "")
         insert_journal_work_data(work_data['message']['DOI'], pubname,
-                                 volume, work_data['message']['page'],
-                                 **kwargs)
+                                 volume, pages, **kwargs)
         return "J"
     elif (typ == "proceedings-article" or
             (typ == "posted_content" and 'subtype' in work_data['message'] and
