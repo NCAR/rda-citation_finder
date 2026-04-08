@@ -95,9 +95,13 @@ def insert_publication_data(work_data, **kwargs):
             pubname = work_data['message']['container-title'][0]
 
         pubname = pubname.replace("\\", "\\\\")
-        volume = work_data['message']['volume']
-        if 'issue' in work_data['message']:
-            volume += f"({work_data['message']['issue']})"
+        if 'volume' in work_data['message']:
+            volume = work_data['message']['volume']
+            if 'issue' in work_data['message']:
+                volume += f"({work_data['message']['issue']})"
+
+        else:
+            volume = ""
 
         pages = (work_data['message']['page'] if 'page' in work_data['message']
                  else "")
