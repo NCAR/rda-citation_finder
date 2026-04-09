@@ -7,6 +7,10 @@ def configure(settings_file):
     config = {
         'temporary-directory-path': "",
         'default-asset-type': "",
+        'mail': {
+            'host': "localhost",
+            'port': 465,
+        },
         'citation-database': {
             'user': "",
             'password': "",
@@ -65,6 +69,9 @@ def configure(settings_file):
             elif key.find("citation-database") == 0:
                 cparts = key.split("_")
                 config['citation-database'][cparts[1]] = value
+            elif key.find("mail") == 0:
+                cparts = key.split("-")
+                config['mail'][cparts[1]] = value
             else:
                 kparts = key.split("_")
                 if kparts[-1] == "id":
