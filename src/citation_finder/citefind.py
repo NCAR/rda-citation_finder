@@ -4,6 +4,7 @@ import os
 import sys
 
 from datetime import datetime
+from libpkg.unixutils import sendmail
 from pathlib import Path
 
 from .cache import clean_cache
@@ -212,6 +213,11 @@ def main():
                 for file in Path(
                         config['temporary-directory-path']).glob("*.json"):
                     file.unlink()
+
+            sendmail(["dattore@ucar.edu"], "dattore@ucar.edu",
+                     f"citefind cron for {settings['doi-group']}",
+                     mail_message, host=config['mail']['host'],
+                     port=config['mail']['port'])
 
 
 if __name__ == "__main__":
