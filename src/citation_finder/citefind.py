@@ -162,7 +162,7 @@ def main():
     output_file = os.path.join(
             config['temporary-directory-path'],
             "output." + datetime.now().strftime("%Y%m%d%H%M"))
-    with open(output_file, "w") as settings['output']:
+    with open(output_file, "w") as output:
         print(f"Output file is {output_file}")
         conn, err = db_connect()
         if conn is None:
@@ -184,7 +184,7 @@ def main():
             if 'doi-list' not in settings:
                 settings['doi-list'] = (
                         get_doi_list(settings['doi-group'],
-                                     output=settings['output']))
+                                     output=output))
 
             print(settings['doi-list'])
             print(settings['services'])
@@ -193,14 +193,14 @@ def main():
                         "." + service, package=__package__)
                 query_service(module, doi_group=settings['doi-group'],
                               doi_list=settings['doi-list'],
-                              output=settings['output'],
+                              output=output,
                               no_works=settings['no-works'])
 
             run_integrity_checks(schemaname=schemaname,
-                                 output=settings['output'])
+                                 output=output)
         except Exception as err:
             err = f"An error occured: '{err}'"
-            settings['output'].write(f"{err}\n")
+            output.write(f"{err}\n")
             print(err)
         finally:
             if not settings['keep-json']:
