@@ -220,10 +220,10 @@ def main():
                          mail_message, host=config['mail']['host'],
                          port=int(config['mail']['port']))
             except Exception as err:
-                output.write(
-                        f"***SENDMAIL error: '{err}' using host/port: "
-                        f"'{config['mail']['host']}/{config['mail']['port']}'"
-                        "\n")
+                err = (f"***SENDMAIL error: '{err}' using host/port: "
+                       f"'{config['mail']['host']}/{config['mail']['port']}'")
+                output.write(f"{err}\n")
+                print(err)
 
 
 if __name__ == "__main__":
