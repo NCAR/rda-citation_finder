@@ -165,7 +165,9 @@ def main():
             config['temporary-directory-path'],
             "output." + datetime.now().strftime("%Y%m%d%H%M"))
     with open(output_file, "w") as output:
-        print(f"Output file is {output_file}")
+        msg = f"Output file is {output_file}"
+        mail_message.write(f"{msg}\n")
+        print(msg)
         conn, err = db_connect()
         if conn is None:
             err = f"Database connection error: '{err}'"
