@@ -201,7 +201,7 @@ def main():
                               output=output,
                               no_works=settings['no-works'])
 
-            run_integrity_checks(schemaname=schemaname, output=output,
+            run_integrity_checks(schemaname=schemaname,
                                  mail_message=mail_message)
         except Exception as err:
             err = f"An error occured: '{err}'"
