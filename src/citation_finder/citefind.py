@@ -217,7 +217,7 @@ def main():
             sendmail(["dattore@ucar.edu"], "dattore@ucar.edu",
                      f"citefind cron for {settings['doi-group']}",
                      mail_message, host=config['mail']['host'],
-                     port=config['mail']['port'])
+                     port=int(config['mail']['port']))
 
 
 if __name__ == "__main__":
