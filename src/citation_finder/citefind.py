@@ -214,10 +214,16 @@ def main():
                         config['temporary-directory-path']).glob("*.json"):
                     file.unlink()
 
-            sendmail(["dattore@ucar.edu"], "dattore@ucar.edu",
-                     f"citefind cron for {settings['doi-group']}",
-                     mail_message, host=config['mail']['host'],
-                     port=int(config['mail']['port']))
+            try:
+                sendmail(["dattore@ucar.edu"], "dattore@ucar.edu",
+                         f"citefind cron for {settings['doi-group']}",
+                         mail_message, host=config['mail']['host'],
+                         port=int(config['mail']['port']))
+            except Exception as err:
+                output.write(
+                        f"***SENDMAIL error: '{err}' using host/port: "
+                        f"'{config['mail']['host']}/{config['mail']['port']}'"
+                        "\n")
 
 
 if __name__ == "__main__":
