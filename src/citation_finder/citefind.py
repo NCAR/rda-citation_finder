@@ -8,6 +8,7 @@ from pathlib import Path
 from .cache import clean_cache
 from .configure import configure
 from .doi_list import get_doi_list
+from .integrity import run_integrity_checks
 from .local_settings import config
 from .utils import db_connect
 
@@ -195,6 +196,8 @@ def main():
                               output=settings['output'],
                               no_works=settings['no-works'])
 
+            run_integrity_checks(schemaname=schemaname,
+                                 output=settings['output'])
         except Exception as err:
             err = f"An error occured: '{err}'"
             settings['output'].write(f"{err}\n")
