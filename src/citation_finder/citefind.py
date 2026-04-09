@@ -1,6 +1,7 @@
 import importlib
 import io
 import os
+import pkg_resources
 import sys
 
 from datetime import datetime
@@ -95,15 +96,21 @@ def main():
     tool_name = sys.argv[0][sys.argv[0].rfind("/")+1:]
     if len(sys.argv[1:]) == 0 or sys.argv[1] == "--help":
         print((
+            f"usage: {tool_name} template SETTINGS_FILE\n"
             f"usage: {tool_name} configure SETTINGS_FILE\n"
             f"usage: {tool_name} DOI_GROUP [options...]\n"
             f"usage: {tool_name} --help\n"
             f"usage: {tool_name} --show-doi-groups\n"
             "\n"
             "required:\n"
-            "SETTINGS_FILE   source file for configuring the tool (see the "
-            "template\n"
-            "                'settings.txt')\n"
+            "SETTINGS_FILE   for 'template': makes a copy of the settings "
+            "template in \n"
+            "                  the current directory, which must be edited to "
+            "specify the\n"
+            "                  various settings values\n"
+            "                for 'configure': uses the values in "
+            "SETTINGS_FILE to configure\n"
+            "                  the tool\n"
             "DOI_GROUP       doi group for which to get citation statistics\n"
             "                (see --show-doi-groups)\n"
             "\n"
@@ -134,6 +141,18 @@ def main():
     global DEBUG
     DEBUG = False
     args = sys.argv[1:]
+    if args[0] == "template":
+        del args[0]
+        if len(args) == 0:
+            raise ValueError("missing output settings file name")
+
+        template_path = "/".join(["templates", "settings.txt"])
+        template = pkg_resources.resource_string(__name__, template_path)
+        with open(args[0], "w") as f:
+            f.write(template.decode("utf-8"))
+
+        sys.exit(0)
+
     if args[0] == "configure":
         del args[0]
         if len(args) == 0:
