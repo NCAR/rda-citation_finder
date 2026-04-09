@@ -9,7 +9,7 @@ def configure(settings_file):
         'default-asset-type': "",
         'mail': {
             'host': "localhost",
-            'port': 465,
+            'port': "465",
         },
         'citation-database': {
             'user': "",
