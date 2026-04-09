@@ -3,6 +3,8 @@
 #
 temporary-directory-path = <path>
 default-asset-type = <type>
+mail-host = <host>
+mail-port = <port>
 #
 # provide database connection information here
 #
