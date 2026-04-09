@@ -3,6 +3,10 @@
 #
 temporary-directory-path = <path>
 default-asset-type = <type>
+#
+# if you omit the 'mail' entries, then the default will be:
+#    host: 'localhost', port: 465
+#
 mail-host = <host>
 mail-port = <port>
 #
