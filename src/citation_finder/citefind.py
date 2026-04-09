@@ -1,4 +1,5 @@
 import importlib
+import io
 import os
 import sys
 
@@ -159,6 +160,7 @@ def main():
     clean_cache()
     settings = parse_args(args)
     print(settings)
+    mail_message = io.StringIO()
     output_file = os.path.join(
             config['temporary-directory-path'],
             "output." + datetime.now().strftime("%Y%m%d%H%M"))
@@ -189,6 +191,7 @@ def main():
             print(settings['doi-list'])
             print(settings['services'])
             for service in settings['services']:
+                mail_message.write(f"Querying '{service}'.\n")
                 module = importlib.import_module(
                         "." + service, package=__package__)
                 query_service(module, doi_group=settings['doi-group'],
@@ -196,8 +199,8 @@ def main():
                               output=output,
                               no_works=settings['no-works'])
 
-            run_integrity_checks(schemaname=schemaname,
-                                 output=output)
+            run_integrity_checks(schemaname=schemaname, output=output,
+                                 mail_message=mail_message)
         except Exception as err:
             err = f"An error occured: '{err}'"
             output.write(f"{err}\n")
