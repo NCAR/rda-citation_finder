@@ -179,6 +179,7 @@ def main():
                     config['doi-groups'][settings['doi-group']]['db-table'],
                     schemaname))
             conn.commit()
+            conn.close()
             if 'doi-list' not in settings:
                 settings['doi-list'] = (
                         get_doi_list(settings['doi-group'],
@@ -195,9 +196,10 @@ def main():
                               no_works=settings['no-works'])
 
         except Exception as err:
-            print(f"An error occured: '{err}'")
+            err = f"An error occured: '{err}'"
+            settings['output'].write(f"{err}\n")
+            print(err)
         finally:
-            conn.close()
             if not settings['keep-json']:
                 for file in Path(
                         config['temporary-directory-path']).glob("*.json"):
