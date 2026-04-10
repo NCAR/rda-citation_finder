@@ -40,12 +40,15 @@ def find_citations(**kwargs):
                         f"Error reading DataCITE JSON for DOI '{doi}'\n")
                 continue
 
-        if ('citations' not in j['data'] or 'data' not in j['citations'] or
-                len(j['citations']['data']) == 0):
+        if 'relationships' not in j['data']:
             continue
 
-        kwargs['output'].write(
-                f"      {len(j['citations']['data'])} citations found ...\n")
+        j = j['data']['relationships']
+        if 'citations' not in j:
+            continue
+
+        j = j['citations']
+        kwargs['output'].write(f"      {len(j['data'])} citations found ...\n")
         for work_doi in j['citations']['data']:
             work_doi = work_doi['id']
             success, new_entry = insert_citation(
