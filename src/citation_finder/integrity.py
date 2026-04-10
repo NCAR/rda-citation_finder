@@ -10,6 +10,23 @@ def run_integrity_checks(**kwargs):
         raise RuntimeError(err)
 
     cursor = conn.cursor()
+    # check for work DOIs without an entry
+    try:
+        cursor.execute(
+                "select s.doi_work from (select distinct doi_work from "
+                f"{kwargs['schemaname']}.sources) as s left join "
+                f"{kwargs['schemaname']}.works as w on w.doi = s.doi_work "
+                "where w.doi is null")
+        res = cursor.fetchall()
+        kwargs['mail_message'].write(
+                f"  # works without an entry: {len(res)}\n"
+                "    Works DOI list:\n")
+        for e in res:
+            kwargs['mail_message'].write(f"      {e[0]}\n")
+    except Exception as err:
+        kwargs['mail_message'].write(
+                f"  **Error checking for works without an entry: '{err}'\n")
+
     # check for empty titles
     try:
         cursor.execute(
