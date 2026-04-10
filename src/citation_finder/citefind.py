@@ -236,7 +236,7 @@ def main():
             try:
                 sendmail(["dattore@ucar.edu"], "dattore@ucar.edu",
                          f"citefind cron for {settings['doi-group']}",
-                         mail_message.get_value(), host=config['mail']['host'],
+                         mail_message.getvalue(), host=config['mail']['host'],
                          port=int(config['mail']['port']))
             except Exception as err:
                 err = (f"***SENDMAIL error: '{err}' using host/port: "
