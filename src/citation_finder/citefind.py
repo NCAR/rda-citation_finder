@@ -30,13 +30,15 @@ def parse_args(args):
     if args[0] not in config['doi-groups']:
         raise ValueError(f"'{args[0]}' is not a valid doi group")
 
-    settings = {'doi-group': args[0], 'keep-json': False, 'no-works': False,
-                'delimiter': ";", 'services': []}
+    settings = {'doi-group': args[0], 'keep-json': False, 'no-mail': False,
+                'no-works': False, 'delimiter': ";", 'services': []}
     n = 1
     while n < len(args):
         if args[n] == "-d":
             n += 1
             doi_data = args[n]
+        elif args[n] == "-M":
+            settings['no-mail'] = True
         elif args[n] == "-s":
             n += 1
             settings['delimiter'] = args[n]
@@ -122,8 +124,10 @@ def main():
             "                - the publisher of the DOI\n"
             "                - the asset type\n"
             "-k              keep the json files from the APIs - useful for "
-            " testing\n"
+            "testing\n"
             "                (default is to remove them)\n"
+            "-M              suppress completion mail message - useful for "
+            "testing\n"
             "--no-works      don't collect information about the citing "
             "works\n"
             "--only-services SERVICES\n"
@@ -233,16 +237,19 @@ def main():
                         config['temporary-directory-path']).glob("*.json"):
                     file.unlink()
 
-            try:
-                sendmail(["dattore@ucar.edu"], "dattore@ucar.edu",
-                         f"citefind cron for {settings['doi-group']}",
-                         mail_message.getvalue(), host=config['mail']['host'],
-                         port=int(config['mail']['port']))
-            except Exception as err:
-                err = (f"***SENDMAIL error: '{err}' using host/port: "
-                       f"'{config['mail']['host']}/{config['mail']['port']}'")
-                output.write(f"{err}\n")
-                raise RuntimeError(err)
+            if not settings['no-mail']:
+                try:
+                    sendmail(["dattore@ucar.edu"], "dattore@ucar.edu",
+                             f"citefind cron for {settings['doi-group']}",
+                             mail_message.getvalue(),
+                             host=config['mail']['host'],
+                             port=int(config['mail']['port']))
+                except Exception as err:
+                    err = (f"***SENDMAIL error: '{err}' using host/port: "
+                           f"'{config['mail']['host']}/"
+                           f"{config['mail']['port']}'")
+                    output.write(f"{err}\n")
+                    raise RuntimeError(err)
 
 
 if __name__ == "__main__":
