@@ -173,14 +173,14 @@ def find_citations(**kwargs):
                 if num_tries == 3:
                     kwargs['output'].write(
                             f"Error reading CrossRef JSON for DOI '{doi}' "
-                            "after three attempts")
+                            "after three attempts\n")
                     next_cursor = None
                     continue
 
             if j['status'] != "ok":
                 Path(filename).unlink(missing_ok=True)
                 kwargs['output'].write(
-                        f"Server failure for DOI '{doi}': '{j['message']}")
+                        f"Server failure for DOI '{doi}': '{j['message']}\n")
                 next_cursor = None
                 continue
 
