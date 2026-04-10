@@ -4,9 +4,17 @@ import requests
 
 from pathlib import Path
 
-from .inserts import insert_citation, insert_source, inserted_doi_data
+from .crossref import get_work_data as get_crossref_work_data
+from .crossref import get_publication_date as get_crossref_publication_date
+from .crossref import insert_authors as insert_crossref_authors
+from .crossref import (
+        insert_publication_data as insert_crossref_publication_data)
+from .inserts import (insert_citation,
+                      insert_general_work_data,
+                      insert_source,
+                      inserted_doi_data)
 from .local_settings import config
-from .utils import db_connect, reset_new_flag
+from .utils import convert_unicodes, db_connect, reset_new_flag, repair_string
 
 
 API_URL = "https://api.datacite.org/dois"
@@ -62,6 +70,37 @@ def find_citations(**kwargs):
 
             if kwargs['no_works'] or not new_entry:
                 continue
+
+            work_data = get_crossref_work_data(work_doi)
+            if work_data is None:
+                kwargs['output'].write(
+                        "***Unable to get CrossRef data for works DOI "
+                        f"'{work_doi}'\n")
+                continue
+
+            # add author data for the citing work
+            insert_crossref_authors(work_data, **kwargs)
+            # add type-specific data for the work
+            pubtype = insert_crossref_publication_data(work_data, **kwargs)
+            if pubtype is None:
+                continue
+
+            # add general data about the work
+            message = work_data['message']
+            pubdate = get_crossref_publication_date(message, **kwargs)
+            if len(pubdate) > 0:
+                title = convert_unicodes(repair_string(message['title'][0]))
+                insert_general_work_data(
+                        work_doi, title, pubdate, pubtype,
+                        message['publisher'], **kwargs)
+                if pubdate['month'] == 0:
+                    kwargs['output'].write(
+                            "        Warning: missing publication month for "
+                            f"work DOI {work_doi} citing {doi}\n")
+            else:
+                kwargs['output'].write(
+                        f"***NO OR BAD PUBLISHER DATE for work DOI {work_doi} "
+                        f"citing {doi}\n")
 
     reset_new_flag(**kwargs)
     kwargs['conn'].close()
