@@ -96,9 +96,10 @@ def regenerate_dataset_descriptions(**kwargs):
                 "v.dsid")
         res = cursor.fetchall()
         for e in res:
-            kwargs['output'].write(
-                    f"Found {e[1]} new {kwargs['service']} data citations for "
-                    f"{e[0]}\n")
+            msg = (f"Found {e[1]} new {kwargs['service']} data citations for "
+                   f"{e[0]}\n")
+            kwargs['output'].write(msg)
+            kwargs['mail_message'].write(msg)
             try:
                 response = requests.get(
                         f"https://gdex.ucar.edu/redeploy/dsgen{e[0]}")
