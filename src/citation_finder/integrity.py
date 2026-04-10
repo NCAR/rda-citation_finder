@@ -13,8 +13,7 @@ def run_integrity_checks(**kwargs):
     # check for empty titles
     try:
         cursor.execute(
-                f"select * from {kwargs['schemaname']}.citation.works where "
-                "title = ''")
+                f"select * from {kwargs['schemaname']}.works where title = ''")
         kwargs['mail_message'].write(
                 f"  # works without a title: {len(cursor.fetchall())}\n")
     except Exception as err:
@@ -24,8 +23,8 @@ def run_integrity_checks(**kwargs):
     # check author names
     try:
         cursor.execute(
-                "select * from citation.works_authors where last_name like "
-                "'%\\\\-%'")
+                f"select * from {kwargs['schemaname']}.works_authors where "
+                "last_name like '%\\\\-%'")
         kwargs['mail_message'].write(
                 "  # author last names with an escaped hyphen: "
                 f"{len(cursor.fetchall())}\n")
@@ -36,8 +35,8 @@ def run_integrity_checks(**kwargs):
 
     try:
         cursor.execute(
-                "select * from citation.works_authors where last_name like "
-                "'%\\\\''%'")
+                f"select * from {kwargs['schemaname']}.works_authors where "
+                "last_name like '%\\\\''%'")
         kwargs['mail_message'].write(
                 "  # author last names with an escaped apostrophe: "
                 f"{len(cursor.fetchall())}\n")
@@ -50,9 +49,9 @@ def run_integrity_checks(**kwargs):
     try:
         cursor.execute(
                 "select w.doi, count(a.last_name) from "
-                f"{kwargs['schemaname']}.works as w left join citation."
-                "works_authors as a on a.id = w.doi group by w.doi having "
-                "count(a.last_name) = 0")
+                f"{kwargs['schemaname']}.works as w left join "
+                f"{kwargs['schemaname']}.works_authors as a on a.id = w.doi "
+                "group by w.doi having count(a.last_name) = 0")
         res = cursor.fetchall()
         kwargs['mail_message'].write(
                 f"  # of DOIs with missing authors: {len(res)}\n"
