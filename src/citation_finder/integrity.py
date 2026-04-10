@@ -23,7 +23,7 @@ def run_integrity_checks(**kwargs):
                 f"  # works without an entry: {len(res)}\n"
                 "    Works DOI list:\n")
         for e in res:
-            kwargs['mail_message'].write(f"      {e[0]} {e[1]}\n")
+            kwargs['mail_message'].write(f"      {e[0]:<50} {e[1]}\n")
 
     except Exception as err:
         kwargs['mail_message'].write(
