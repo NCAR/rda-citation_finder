@@ -49,7 +49,7 @@ def find_citations(**kwargs):
 
         j = j['citations']
         kwargs['output'].write(f"      {len(j['data'])} citations found ...\n")
-        for work_doi in j['citations']['data']:
+        for work_doi in j['data']:
             work_doi = work_doi['id']
             success, new_entry = insert_citation(
                     doi, work_doi, "DataCite", **kwargs)
