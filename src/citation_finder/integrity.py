@@ -82,14 +82,18 @@ def run_integrity_checks(**kwargs):
         kwargs['mail_message'].write(
                   f"**Error checking for missing authors: '{err}'\n")
 
-    # check for bad publication months
+    # check for missing publication months
     try:
         cursor.execute(
                 f"select * from {kwargs['schemaname']}.works where pub_month "
                 "= 0")
+        res = cursor.fetchall()
         kwargs['mail_message'].write(
-                "  # works without a publication month: "
-                f"{len(cursor.fetchall())}\n")
+                "  # works without a publication month: {len(res)}\n"
+                "   Work DOI list:\n")
+        for e in res:
+            kwargs['mail_message'].write(f"      {e[0]}\n")
+
     except Exception as err:
         kwargs['mail_message'].write(
                 f"  **Error checking for missing publication months: '{err}'"
