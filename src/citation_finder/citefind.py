@@ -191,7 +191,7 @@ def main():
         conn, err = db_connect()
         if conn is None:
             err = f"Database connection error: '{err}'"
-            print(err)
+            output.write(f"{err}\n")
             raise RuntimeError(err)
 
         try:
@@ -226,7 +226,7 @@ def main():
         except Exception as err:
             err = f"An error occured: '{err}'"
             output.write(f"{err}\n")
-            print(err)
+            raise RuntimeError(err)
         finally:
             if not settings['keep-json']:
                 for file in Path(
@@ -242,7 +242,7 @@ def main():
                 err = (f"***SENDMAIL error: '{err}' using host/port: "
                        f"'{config['mail']['host']}/{config['mail']['port']}'")
                 output.write(f"{err}\n")
-                print(err)
+                raise RuntimeError(err)
 
 
 if __name__ == "__main__":
