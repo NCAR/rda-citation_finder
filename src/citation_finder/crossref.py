@@ -149,7 +149,7 @@ def insert_publication_data(work_data, **kwargs):
         return "P"
 
     kwargs['output'].write(
-            f"**UNKNOWN CrossRef TYPE: {typ} for work DOI: "
+            f"**UNKNOWN CrossRef TYPE: '{typ}' for work DOI: "
             f"{work_data['message']['DOI']}'\n")
     return None
 
