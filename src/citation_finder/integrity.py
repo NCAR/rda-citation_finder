@@ -13,16 +13,18 @@ def run_integrity_checks(**kwargs):
     # check for work DOIs without an entry
     try:
         cursor.execute(
-                "select s.doi_work from (select distinct doi_work from "
-                f"{kwargs['schemaname']}.sources) as s left join "
-                f"{kwargs['schemaname']}.works as w on w.doi = s.doi_work "
-                "where w.doi is null")
+                "select s.doi_work, s.sources from (select distinct doi_work, "
+                "string_agg(distinct source, ',') as sources from "
+                f"{kwargs['schemaname']}.sources group by doi_work) as s left "
+                f"join {kwargs['schemaname']}.works as w on w.doi = s."
+                "doi_work where w.doi is null")
         res = cursor.fetchall()
         kwargs['mail_message'].write(
                 f"  # works without an entry: {len(res)}\n"
                 "    Works DOI list:\n")
         for e in res:
-            kwargs['mail_message'].write(f"      {e[0]}\n")
+            kwargs['mail_message'].write(f"      {e[0]} {e[1]}\n")
+
     except Exception as err:
         kwargs['mail_message'].write(
                 f"  **Error checking for works without an entry: '{err}'\n")
