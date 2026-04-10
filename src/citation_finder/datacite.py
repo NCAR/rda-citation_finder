@@ -4,7 +4,7 @@ import requests
 
 from pathlib import Path
 
-from .inserts import insert_citation
+from .inserts import insert_citation, insert_source, inserted_doi_data
 from .local_settings import config
 from .utils import db_connect, reset_new_flag
 
