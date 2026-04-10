@@ -222,7 +222,7 @@ def main():
                         "." + service, package=__package__)
                 query_service(module, doi_group=settings['doi-group'],
                               doi_list=settings['doi-list'],
-                              output=output,
+                              output=output, mail_message=mail_message,
                               no_works=settings['no-works'])
 
             run_integrity_checks(schemaname=schemaname,
