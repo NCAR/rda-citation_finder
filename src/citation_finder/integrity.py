@@ -17,7 +17,7 @@ def run_integrity_checks(**kwargs):
                 "string_agg(distinct source, ',') as sources from "
                 f"{kwargs['schemaname']}.sources group by doi_work) as s left "
                 f"join {kwargs['schemaname']}.works as w on w.doi = s."
-                "doi_work where w.doi is null")
+                "doi_work where w.doi is null order by s.sources")
         res = cursor.fetchall()
         kwargs['mail_message'].write(
                 f"  # works without an entry: {len(res)}\n"
