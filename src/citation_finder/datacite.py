@@ -53,6 +53,15 @@ def find_citations(**kwargs):
             work_doi = work_doi['id']
             success, new_entry = insert_citation(
                     doi, work_doi, "DataCite", **kwargs)
+            if not success:
+                continue
+
+            insert_source(work_doi, doi, "DataCite", **kwargs)
+            if not inserted_doi_data(doi, publisher, asset_type, **kwargs):
+                continue
+
+            if kwargs['no_works'] or not new_entry:
+                continue
 
     reset_new_flag(**kwargs)
     kwargs['conn'].close()
