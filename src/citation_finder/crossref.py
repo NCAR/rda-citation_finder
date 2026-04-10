@@ -48,6 +48,30 @@ def get_work_data(work_doi):
         return None
 
 
+def get_publication_date(message, **kwargs):
+    pubdate = {}
+    if ('published' in message and 'date-parts' in message['published']):
+        dp = message['published']['date-parts'][0]
+        if len(dp) >= 2:
+            pubdate.update({'year': dp[0], 'month': dp[1]})
+        elif len(dp) == 1:
+            pubdate.update({'year': dp[0], 'month': 0})
+
+    if (len(pubdate) == 0 and 'published-print' in message and 'date-parts' in
+            message['published-print'] and
+            len(message['published-print']['date-parts'][0]) >= 2):
+        dp = message['published-print']['date-parts'][0]
+        pubdate.update({'year': dp[0], 'month': dp[1]})
+
+    if (len(pubdate) == 0 and 'published-online' in message and 'date-parts' in
+            message['published-online'] and
+            len(message['published-online']['date-parts'][0]) >= 2):
+        dp = message['published-online']['date-parts'][0]
+        pubdate.update({'year': dp[0], 'month': dp[1]})
+
+    return pubdate
+
+
 def insert_authors(work_data, **kwargs):
     pid = {'id': work_data['message']['DOI'], 'type': "DOI"}
     sequence = 0
@@ -218,39 +242,17 @@ def find_citations(**kwargs):
 
                 # add general data about the work
                 message = work_data['message']
-                pubdate = {}
-                if ('published' in message and 'date-parts' in
-                        message['published']):
-                    dp = message['published']['date-parts'][0]
-                    if len(dp) >= 2:
-                        pubdate.update({'year': dp[0], 'month': dp[1]})
-                    elif len(dp) == 1:
-                        pubdate.update({'year': dp[0], 'month': 0})
-                        kwargs['output'].write(
-                                "        Warning: missing publication month "
-                                f"for work DOI {work_doi} citing {doi}\n")
-
-                if (len(pubdate) == 0 and 'published-print' in
-                        message and 'date-parts' in
-                        message['published-print'] and
-                        len(message['published-print']['date-parts'][0]) >= 2):
-                    dp = message['published-print']['date-parts'][0]
-                    pubdate.update({'year': dp[0], 'month': dp[1]})
-
-                if (len(pubdate) == 0 and 'published-online' in
-                        message and 'date-parts' in
-                        message['published-online'] and
-                        len(message['published-online']['date-parts'][0])
-                        >= 2):
-                    dp = message['published-online']['date-parts'][0]
-                    pubdate.update({'year': dp[0], 'month': dp[1]})
-
+                pubdate = get_publication_date(message, **kwargs)
                 if len(pubdate) > 0:
                     title = convert_unicodes(
                             repair_string(message['title'][0]))
                     insert_general_work_data(
                             work_doi, title, pubdate, pubtype,
                             message['publisher'], **kwargs)
+                    if pubdate['month'] == 0:
+                        kwargs['output'].write(
+                                "        Warning: missing publication month "
+                                f"for work DOI {work_doi} citing {doi}\n")
                 else:
                     kwargs['output'].write(
                             "***NO OR BAD PUBLISHER DATE for work DOI "
