@@ -89,7 +89,7 @@ def run_integrity_checks(**kwargs):
                 "= 0")
         res = cursor.fetchall()
         kwargs['mail_message'].write(
-                "  # works without a publication month: {len(res)}\n"
+                f"  # works without a publication month: {len(res)}\n"
                 "   Work DOI list:\n")
         for e in res:
             kwargs['mail_message'].write(f"      {e[0]}\n")
