@@ -135,16 +135,19 @@ def insert_publication_data(work_data, **kwargs):
     elif (typ == "proceedings-article" or
             (typ == "posted-content" and 'subtype' in work_data['message'] and
              work_data['message']['subtype'] == "preprint")):
-        if ('container-title' not in work_data['message'] or
-                len(work_data['message']['container-title']) == 0):
-            if ('short-container-title' in work_data['message'] and
-                    len(work_data['message']['short-container-title']) > 0):
-                pubname = work_data['message']['short-container-title'][0]
-            else:
-                pubname = work_data['message']['institution'][0]['name']
-
-        else:
+        try:
             pubname = work_data['message']['container-title'][0]
+        except Exception:
+            try:
+                pubname = work_data['message']['short-container-title'][0]
+            except Exception:
+                try:
+                    pubname = work_data['message']['institution'][0]['name']
+                except Exception:
+                    kwargs['output'].write(
+                            "**NO PREPRINT PUBLICATION NAME for work DOI: "
+                            f"{work_data['message']['DOI']}'\n")
+                    return None
 
         pubname = pubname.replace("\\", "\\\\")
         pages = (work_data['message']['page'] if 'page' in
