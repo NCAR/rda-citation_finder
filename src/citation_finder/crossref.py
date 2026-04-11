@@ -137,7 +137,8 @@ def insert_publication_data(work_data, **kwargs):
              work_data['message']['subtype'] == "preprint")):
         if ('container-title' not in work_data['message'] or
                 len(work_data['message']['container-title']) == 0):
-            if 'short-container-title' in work_data['message']:
+            if ('short-container-title' in work_data['message'] and
+                    len(work_data['message']['short-container-title']) > 0):
                 pubname = work_data['message']['short-container-title'][0]
             else:
                 pubname = work_data['message']['institution'][0]['name']
