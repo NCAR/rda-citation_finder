@@ -107,9 +107,11 @@ def insert_publication_data(work_data, **kwargs):
                     f"{work_data['message']['DOI']}\n")
             return
 
+        pages = (work_data['message']['page'] if 'page' in work_data['message']
+                 else "")
         insert_book_chapter_work_data(work_data['message']['DOI'],
-                                      work_data['message']['ISBN'][0],
-                                      work_data['message']['page'], **kwargs)
+                                      work_data['message']['ISBN'][0], pages,
+                                      **kwargs)
         return "C"
     elif typ == "journal-article":
         if ('container-title' not in work_data['message'] or
