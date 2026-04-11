@@ -133,7 +133,7 @@ def insert_publication_data(work_data, **kwargs):
                                  volume, pages, **kwargs)
         return "J"
     elif (typ == "proceedings-article" or
-            (typ == "posted_content" and 'subtype' in work_data['message'] and
+            (typ == "posted-content" and 'subtype' in work_data['message'] and
              work_data['message']['subtype'] == "preprint")):
         if ('container-title' not in work_data['message'] or
                 len(work_data['message']['container-title']) == 0):
