@@ -9,12 +9,12 @@ from .crossref import get_publication_date as get_crossref_publication_date
 from .crossref import insert_authors as insert_crossref_authors
 from .crossref import (
         insert_publication_data as insert_crossref_publication_data)
-from .inserts import (insert_citation,
-                      insert_general_work_data,
-                      insert_source,
+from .inserts import (insert_citation, insert_general_work_data, insert_source,
                       inserted_doi_data)
 from .local_settings import config
-from .utils import convert_unicodes, db_connect, reset_new_flag, repair_string
+from .utils import (convert_unicodes, db_connect, reset_new_flag,
+                    regenerate_dataset_descriptions, repair_string,
+                    verified_DOI)
 
 
 API_URL = "https://api.datacite.org/dois"
@@ -58,6 +58,12 @@ def find_citations(**kwargs):
         j = j['citations']
         kwargs['output'].write(f"      {len(j['data'])} citations found ...\n")
         for work_doi in j['data']:
+            is_valid_doi = verified_DOI(work_doi)
+            if not is_valid_doi:
+                kwargs['output'].write(
+                        f"Info: ignoring invalid DOI '{work_doi}'\n")
+                continue
+
             work_doi = work_doi['id']
             success, new_entry = insert_citation(
                     doi, work_doi, "DataCite", **kwargs)
