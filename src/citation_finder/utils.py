@@ -1,5 +1,6 @@
 import psycopg2
 import requests
+import time
 
 from .local_settings import config
 
@@ -144,11 +145,13 @@ def verified_DOI(doi, **kwargs):
     if len(res) > 0 and res[0][0] == doi:
         return True
 
+    time.sleep(3)
     response = requests.get(f"https://doi.org/{doi}")
     if response.status_code == 200:
         cursor.execute(
                 f"insert into {config['citation-database']['schemaname']}."
-                "verified_dois values (%s, now())", (doi, ))
+                "verified_dois values (%s, (now() + interval '6 months'))",
+                (doi, ))
         kwargs['conn'].commit()
         return True
 
