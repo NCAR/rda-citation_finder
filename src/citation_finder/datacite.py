@@ -58,13 +58,13 @@ def find_citations(**kwargs):
         j = j['citations']
         kwargs['output'].write(f"      {len(j['data'])} citations found ...\n")
         for work_doi in j['data']:
+            work_doi = work_doi['id']
             is_valid_doi = verified_DOI(work_doi, **kwargs)
             if not is_valid_doi:
                 kwargs['output'].write(
                         f"Info: ignoring invalid DOI '{work_doi}'\n")
                 continue
 
-            work_doi = work_doi['id']
             success, new_entry = insert_citation(
                     doi, work_doi, "DataCite", **kwargs)
             if not success:
