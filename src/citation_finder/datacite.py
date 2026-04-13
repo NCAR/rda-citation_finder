@@ -58,7 +58,7 @@ def find_citations(**kwargs):
         j = j['citations']
         kwargs['output'].write(f"      {len(j['data'])} citations found ...\n")
         for work_doi in j['data']:
-            is_valid_doi = verified_DOI(work_doi)
+            is_valid_doi = verified_DOI(work_doi, **kwargs)
             if not is_valid_doi:
                 kwargs['output'].write(
                         f"Info: ignoring invalid DOI '{work_doi}'\n")
