@@ -145,7 +145,7 @@ def verified_DOI(doi, **kwargs):
     if len(res) > 0 and res[0][0] == doi:
         return True
 
-    time.sleep(3)
+    time.sleep(1)
     response = requests.head(f"https://doi.org/{doi}")
     if response.status_code == 302:
         cursor.execute(
