@@ -129,3 +129,27 @@ def reset_new_flag(**kwargs):
                 f"{config['citation-database']['schemaname']}."
                 f"{config['doi-groups'][kwargs['doi_group']]['db-table']}: "
                 f"'{err}'\n")
+
+
+def verified_DOI(doi, **kwargs):
+    cursor = kwargs['conn'].cursor()
+    cursor.execute(
+            f"delete from {config['citation-database']['schemaname']}."
+            "verified_dois where expiration < now()")
+    kwargs['conn'].commit()
+    cursor.execute(
+            f"select doi from {config['citation-database']['schemaname']}."
+            "verified_dois where doi = %s", (doi, ))
+    res = cursor.fetchall()
+    if len(res) > 0 and res[0][0] == doi:
+        return True
+
+    response = requests.get(f"https://doi.org/{doi}")
+    if response.status_code == 200:
+        cursor.execute(
+                f"insert into {config['citation-database']['schemaname']}."
+                "verified_dois values (%s, now())", (doi, ))
+        kwargs['conn'].commit()
+        return True
+
+    return False
