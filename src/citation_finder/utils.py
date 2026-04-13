@@ -147,7 +147,7 @@ def verified_DOI(doi, **kwargs):
 
     time.sleep(3)
     response = requests.head(f"https://doi.org/{doi}")
-    if response.status_code == 200:
+    if response.status_code == 302:
         cursor.execute(
                 f"insert into {config['citation-database']['schemaname']}."
                 "verified_dois values (%s, (now() + interval '6 months'))",
