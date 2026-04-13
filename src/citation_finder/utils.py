@@ -146,7 +146,7 @@ def verified_DOI(doi, **kwargs):
         return True
 
     time.sleep(3)
-    response = requests.get(f"https://doi.org/{doi}")
+    response = requests.head(f"https://doi.org/{doi}")
     if response.status_code == 200:
         cursor.execute(
                 f"insert into {config['citation-database']['schemaname']}."
