@@ -39,7 +39,8 @@ def find_citations(**kwargs):
         if (response.status_code == 429 and 'code' in j and j['code'] ==
                 "Throttle Error"):
             kwargs['output'].write(
-                    "    ***ABORTING due to throttle error\n")
+                    "    ***ABORTING due to throttle error "
+                    "'{response.text}'\n")
             break
 
         try:
