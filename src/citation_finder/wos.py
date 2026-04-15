@@ -40,7 +40,7 @@ def find_citations(**kwargs):
                 "Throttle Error"):
             kwargs['output'].write(
                     "    ***ABORTING due to throttle error "
-                    "'{response.text}'\n")
+                    f"'{response.text}'\n")
             break
 
         try:
