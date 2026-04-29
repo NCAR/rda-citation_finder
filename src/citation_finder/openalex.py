@@ -108,6 +108,9 @@ def find_citations(**kwargs):
                 if kwargs['no_works'] or not new_entry:
                     continue
 
+                print(f"NEW CITATION! {work_doi}")
+                kwargs['output'].write(f"NEW CITATION! {work_doi}\n")
+
             params['page'] += 1
 
     kwargs['conn'].close()
