@@ -47,13 +47,12 @@ def find_citations(**kwargs):
 
         openalex_id = j['id']
         kwargs['output'].write(f"      OpenAlex ID: '{openalex_id}'\n")
+        # get the DOIs of the citing works
         params = {'per_page': 100, 'page': 1,
                   'filter': (
-                          "cites:{openalex_id},type:book-chapter|article|"
+                          f"cites:{openalex_id},type:book-chapter|article|"
                           "preprint"),
-                  'select': (
-                          "doi,type,title,publication_date,primary_location,"
-                          "authorships"),
+                  'select': "doi",
                   'api_key': config['services']['openalex']['api-key']}
         count = 0x7fffffff
         num_results = 0
@@ -68,6 +67,25 @@ def find_citations(**kwargs):
                     j = json.load(f)
 
             else:
-                pass
+                try:
+                    response = requests.get(API_URL, params=params)
+                    j = json.loads(response.text)
+                    with open(filename, "w") as f:
+                        f.write(response.text)
+
+                except Exception:
+                    Path(filename).unlink(missing_ok=True)
+                    kwargs['output'].write(
+                            f"Error reading OpenAlex JSON for DOI '{doi}'\n")
+                    continue
+
+            if 'meta' not in j or 'results' not in j:
+                continue
+
+            count = j['meta']['count']
+            kwargs['output'].write(f"      {count} citations found ...\n")
+            num_results += len(j['results'])
+            for result in j['results']:
+                print(result['doi'])
 
             params['page'] += 1
