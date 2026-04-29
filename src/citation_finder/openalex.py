@@ -4,8 +4,9 @@ import requests
 
 from pathlib import Path
 
+from .inserts import (insert_citation, insert_source, inserted_doi_data)
 from .local_settings import config
-from .utils import db_connect
+from .utils import db_connect, verified_DOI
 
 
 API_URL = "https://api.openalex.org/works"
@@ -82,10 +83,31 @@ def find_citations(**kwargs):
             if 'meta' not in j or 'results' not in j:
                 continue
 
-            count = j['meta']['count']
-            kwargs['output'].write(f"      {count} citations found ...\n")
+            if count == 0:
+                count = j['meta']['count']
+                kwargs['output'].write(f"      {count} citations found ...\n")
+
             num_results += len(j['results'])
             for result in j['results']:
-                print(result['doi'])
+                work_doi = result['doi'].replace("https://doi.org/", "")
+                is_valid_doi = verified_DOI(work_doi, **kwargs)
+                if not is_valid_doi:
+                    kwargs['output'].write(
+                            f"Info: ignoring invalid DOI '{work_doi}'\n")
+                    continue
+
+                success, new_entry = insert_citation(
+                        doi, work_doi, "OpenAlex", **kwargs)
+                if not success:
+                    continue
+
+                insert_source(work_doi, doi, "OpenAlex", **kwargs)
+                if not inserted_doi_data(doi, publisher, asset_type, **kwargs):
+                    continue
+
+                if kwargs['no_works'] or not new_entry:
+                    continue
 
             params['page'] += 1
+
+    kwargs['conn'].close()
