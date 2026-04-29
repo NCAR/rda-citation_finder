@@ -108,7 +108,7 @@ def find_citations(**kwargs):
                         f"***NO OR BAD PUBLISHER DATE for work DOI {work_doi} "
                         f"citing {doi}\n")
 
-    if kwargs['doi_group'] == "rda":
+    if kwargs['doi_group'] == "gdex":
         regenerate_dataset_descriptions(service="DataCite", **kwargs)
 
     reset_new_flag(**kwargs)

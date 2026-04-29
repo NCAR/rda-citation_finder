@@ -270,7 +270,7 @@ def find_citations(**kwargs):
 
             next_cursor = j['message']['next-cursor']
 
-    if kwargs['doi_group'] == "rda":
+    if kwargs['doi_group'] == "gdex":
         regenerate_dataset_descriptions(service="CrossRef", **kwargs)
 
     reset_new_flag(**kwargs)
