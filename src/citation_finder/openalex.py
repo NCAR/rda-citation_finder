@@ -12,7 +12,9 @@ from .crossref import (
 from .inserts import (insert_citation, insert_general_work_data,
                       insert_source, inserted_doi_data)
 from .local_settings import config
-from .utils import db_connect, convert_unicodes, verified_DOI, repair_string
+from .utils import (db_connect, convert_unicodes, verified_DOI,
+                    regenerate_dataset_descriptions, repair_string,
+                    reset_new_flag)
 
 
 API_URL = "https://api.openalex.org/works"
@@ -102,6 +104,14 @@ def find_citations(**kwargs):
                             f"Info: ignoring invalid DOI '{work_doi}'\n")
                     continue
 
+                work_data = get_crossref_work_data(work_doi)
+                if (work_data is None or 'message' not in work_data or
+                        'author' not in work_data['message']):
+                    kwargs['output'].write(
+                            "***Unable to get CrossRef data for works DOI "
+                            f"'{work_doi}'\n")
+                    continue
+
                 success, new_entry = insert_citation(
                         doi, work_doi, "OpenAlex", **kwargs)
                 if not success:
@@ -112,13 +122,6 @@ def find_citations(**kwargs):
                     continue
 
                 if kwargs['no_works'] or not new_entry:
-                    continue
-
-                work_data = get_crossref_work_data(work_doi)
-                if work_data is None:
-                    kwargs['output'].write(
-                            "***Unable to get CrossRef data for works DOI "
-                            f"'{work_doi}'\n")
                     continue
 
                 # add author data for the citing work
