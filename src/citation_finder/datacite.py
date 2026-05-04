@@ -23,7 +23,7 @@ API_URL = "https://api.datacite.org/dois"
 def find_citations(**kwargs):
     kwargs['conn'], err = db_connect()
     if kwargs['conn'] is None:
-        err = f"***DATABASE ERROR from crossref.find_citations(): '{err}'"
+        err = f"***DATABASE ERROR from datacite.find_citations(): '{err}'"
         raise RuntimeError(err)
 
     for doi, publisher, asset_type in kwargs['doi_list']:
