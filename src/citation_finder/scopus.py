@@ -46,6 +46,7 @@ def find_citations(**kwargs):
                 f"    querying DOI '{doi} | {publisher} | {asset_type}' ...\n")
         total_results = 0x7fffffff
         while params['start'] < total_results:
+            total_results = 0
             filename = (doi.replace("/", "@@") + ".elsevier." +
                         str(params['start']) + ".json")
             filename = os.path.join(config['temporary-directory-path'],
@@ -86,10 +87,10 @@ def find_citations(**kwargs):
                     kwargs['output'].write(
                             "***ABORTING DUE TO RATE LIMITING\n")
                     return
-                else:
-                    kwargs['output'].write(
-                            f"      Error: '{ecode}' at {params['start']}\n")
-                    continue
+
+                kwargs['output'].write(
+                        f"      Error: '{ecode}' at {params['start']}\n")
+                continue
 
             total_results = int(j['search-results']['opensearch:totalResults'])
             if total_results == 0:
@@ -109,5 +110,9 @@ def find_citations(**kwargs):
             if not success:
                 continue
 
-            if new_entry:
-                pass
+            insert_source(work_doi, doi, "Scopus", **kwargs)
+            if not inserted_doi_data(doi, publisher, asset_type, **kwargs):
+                continue
+
+            if kwargs['no_works'] or not new_entry:
+                continue
