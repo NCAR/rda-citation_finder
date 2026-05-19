@@ -113,7 +113,8 @@ def run_integrity_checks(**kwargs):
     # print the publisher list
     try:
         cursor.execute(
-                f"select distinct publisher from {kwargs['schemaname']}.works")
+                f"select distinct publisher from {kwargs['schemaname']}.works "
+                "order by publisher")
         res = cursor.fetchall()
         kwargs['mail_message'].write("Current Publisher List:\n")
         for e in res:
