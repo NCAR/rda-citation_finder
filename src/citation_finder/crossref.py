@@ -174,10 +174,10 @@ def find_citations(**kwargs):
     for doi, publisher, asset_type in kwargs['doi_list']:
         kwargs['output'].write(
                 f"    querying DOI '{doi} | {publisher} | {asset_type}' ...\n")
-        next_page = "__first__"
+        next_page = 0
         while next_page is not None:
-            filename = (doi.replace("/", "@@") + ".crossref." + next_page +
-                        ".json")
+            filename = (doi.replace("/", "@@") + ".crossref." + str(next_page)
+                        + ".json")
             filename = os.path.join(config['temporary-directory-path'],
                                     filename)
             if os.path.exists(filename):
@@ -186,9 +186,7 @@ def find_citations(**kwargs):
 
             else:
                 params['object-id'] = doi
-                if next_page != "__first__":
-                    params['page'] = next_page
-
+                params['page'] = next_page
                 num_tries = 0
                 while num_tries < 3:
                     time.sleep(num_tries * 5)
@@ -286,7 +284,7 @@ def find_citations(**kwargs):
                 kwargs['output'].write(f"+++NEW CITATION: '{work_doi}'\n")
                 kwargs['conn'].commit()
 
-            next_page = str(j['message']['next-page'])
+            next_page = j['message']['next-page']
 
     if kwargs['doi_group'] == "gdex":
         regenerate_dataset_descriptions(service="CrossRef", **kwargs)
