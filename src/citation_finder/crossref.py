@@ -192,10 +192,6 @@ def find_citations(**kwargs):
                     time.sleep(num_tries * 5)
                     try:
                         response = requests.get(API_URL, params=params)
-                        if response.text == "Resource not found.":
-                            num_tries = 4
-                            break
-
                         j = json.loads(response.text)
                         with open(filename, "w") as f:
                             f.write(response.text)
@@ -210,12 +206,6 @@ def find_citations(**kwargs):
                     kwargs['output'].write(
                             f"Error reading CrossRef JSON for DOI '{doi}' "
                             "after three attempts\n")
-                elif num_tries == 4:
-                    kwargs['output'].write(
-                            "CrossRef does not provide citations for DOI "
-                            f"'{doi}'\n")
-
-                if num_tries >= 3:
                     next_page = None
                     continue
 
