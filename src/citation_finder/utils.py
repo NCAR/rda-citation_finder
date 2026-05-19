@@ -150,8 +150,10 @@ def verified_DOI(doi, **kwargs):
     if response.status_code == 302:
         cursor.execute(
                 f"insert into {config['citation-database']['schemaname']}."
-                "verified_dois values (%s, (now() + interval '6 months'))",
-                (doi, ))
+                "verified_dois (doi, expiration) values (%s, "
+                "(now() + interval '6 months')) on conflict on constraint "
+                "verified_dois_pkey do update set expiration = excluded."
+                "expiration", (doi, ))
         kwargs['conn'].commit()
         return True
 
