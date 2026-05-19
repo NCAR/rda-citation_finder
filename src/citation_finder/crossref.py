@@ -185,14 +185,14 @@ def find_citations(**kwargs):
                     j = json.load(f)
 
             else:
+                params['obj-id'] = doi
+                if next_cursor != "__first__":
+                    params['cursor'] = next_cursor
+
                 num_tries = 0
                 while num_tries < 3:
                     time.sleep(num_tries * 5)
                     try:
-                        params['obj-id'] = doi
-                        if next_cursor != "__first__":
-                            params['cursor'] = next_cursor
-
                         response = requests.get(API_URL, params=params)
                         j = json.loads(response.text)
                         with open(filename, "w") as f:
