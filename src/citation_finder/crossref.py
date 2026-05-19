@@ -170,7 +170,7 @@ def find_citations(**kwargs):
         err = f"***DATABASE ERROR from crossref.find_citations(): '{err}'"
         raise RuntimeError(err)
 
-    params = {'object-id': "", 'page': ""}
+    params = {}
     for doi, publisher, asset_type in kwargs['doi_list']:
         kwargs['output'].write(
                 f"    querying DOI '{doi} | {publisher} | {asset_type}' ...\n")
@@ -185,7 +185,7 @@ def find_citations(**kwargs):
                     j = json.load(f)
 
             else:
-                params['obj-id'] = doi
+                params['object-id'] = doi
                 if next_page != "__first__":
                     params['page'] = next_page
 
