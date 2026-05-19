@@ -39,9 +39,12 @@ def process_work(work_doi, work, **kwargs):
                             "        Warning: missing publication month for "
                             f"work DOI {work_doi} citing {kwargs['doi']}\n")
 
+                kwargs['conn'].commit()
                 return
 
     if 'pubdate' in locals():
+        # didn't insert work data because of zero-length pubdate, so get from
+        #  WoS record
         title = convert_unicodes(repair_string(message['title'][0]))
         insert_general_work_data(
                 work_doi, title,
@@ -51,6 +54,7 @@ def process_work(work_doi, work, **kwargs):
         kwargs['output'].write(
                 "        Warning: missing publication month for work DOI "
                 f"{work_doi} citing {kwargs['doi']}\n")
+        kwargs['conn'].commit()
         return
 
     if 'pubtype' in locals():
@@ -60,6 +64,8 @@ def process_work(work_doi, work, **kwargs):
                 f"{work['static_data']['summary']['pub_info']['pubtype']}\n")
         return
 
+    # no work data available at all from CrossRef, so use what is in the WoS
+    #  short record
     if work['static_data']['summary']['pub_info']['pubtype'] == "Journal":
         try:
             for name in work['static_data']['summary']['names']['name']:
@@ -96,6 +102,7 @@ def process_work(work_doi, work, **kwargs):
         kwargs['output'].write(
                 "        Warning: missing publication month and publisher "
                 f"for work DOI {work_doi} citing {kwargs['doi']}\n")
+        kwargs['conn'].commit()
         return
 
     kwargs['output'].write(
@@ -198,16 +205,22 @@ def find_citations(**kwargs):
                 success, new_entry = insert_citation(
                         doi, work_doi, "WoS", **kwargs)
                 if not success:
+                    kwargs['conn'].rollback()
                     continue
 
                 insert_source(work_doi, doi, "WoS", **kwargs)
                 if not inserted_doi_data(doi, publisher, asset_type, **kwargs):
+                    kwargs['conn'].rollback()
                     continue
 
                 if kwargs['no_works'] or not new_entry:
+                    kwargs['conn'].rollback()
                     continue
 
                 process_work(work_doi, work, doi=doi, **kwargs)
+                # roll back any uncommitted changes from process_work() when
+                #  the full process fails to complete
+                kwargs['conn'].rollback()
 
             num_records = j['QueryResult']['RecordsFound']
             works_id_params['firstRecord'] += works_id_params['count']

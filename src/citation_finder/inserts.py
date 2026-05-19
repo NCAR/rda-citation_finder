@@ -12,7 +12,7 @@ def insert_citation(data_doi, works_doi, service, **kwargs):
                 "(doi_data, doi_work, new_flag) values (%s, %s, %s) on "
                 "conflict (doi_data, doi_work) do nothing",
                 (data_doi, works_doi, "1"))
-        kwargs['conn'].commit()
+        #kwargs['conn'].commit()
         return (True, (cursor.rowcount == 1))
     except Exception as err:
         kwargs['output'].write(
@@ -29,7 +29,7 @@ def insert_source(works_doi, data_doi, service, **kwargs):
                 "sources (doi_work, doi_data, source) values (%s, %s, %s) on "
                 "conflict on constraint sources_pkey do nothing",
                 (works_doi, data_doi, service))
-        kwargs['conn'].commit()
+        #kwargs['conn'].commit()
     except Exception as err:
         kwargs['output'].write(
                 "Error while inserting {} source ({}, {}): '{}'\n"
@@ -49,7 +49,7 @@ def inserted_doi_data(data_doi, publisher, asset_type, **kwargs):
                 "excluded.asset_type) > length(doi_data.asset_type) then "
                 "excluded.asset_type else doi_data.asset_type end",
                 (data_doi, publisher, asset_type))
-        kwargs['conn'].commit()
+        #kwargs['conn'].commit()
         return True
     except Exception as err:
         kwargs['output'].write(
@@ -95,7 +95,7 @@ def insert_work_author(pid, author, sequence, source, **kwargs):
     try:
         cursor = kwargs['conn'].cursor()
         cursor.execute(insert, params)
-        kwargs['conn'].commit()
+        #kwargs['conn'].commit()
     except psycopg2.errors.UniqueViolation:
         try:
             cursor.execute(
@@ -148,7 +148,7 @@ def insert_book_chapter_work_data(work_doi, isbn, pages, **kwargs):
                 "excluded.isbn) > length(book_chapter_works.isbn) then "
                 "excluded.isbn else book_chapter_works.isbn end",
                 (work_doi, pages, isbn))
-        kwargs['conn'].commit()
+        #kwargs['conn'].commit()
     except Exception as err:
         kwargs['output'].write(
                 f"Error while inserting book chapter data ({work_doi}, "
@@ -171,7 +171,7 @@ def insert_journal_work_data(work_doi, pubname, volume, pages, **kwargs):
                 "excluded.pages) > length(journal_works.pages) then excluded."
                 "pages else journal_works.pages end",
                 (work_doi, pubname, volume, pages))
-        kwargs['conn'].commit()
+        #kwargs['conn'].commit()
     except Exception as err:
         kwargs['output'].write(
                 f"Error while inserting journal data ({work_doi}, {pubname}, "
@@ -194,7 +194,7 @@ def insert_proceedings_work_data(work_doi, pubname, volume, pages, **kwargs):
                 "case when length(excluded.pages) > length(proceedings_works."
                 "pages) then excluded.pages else proceedings_works.pages end",
                 (work_doi, pubname, volume, pages))
-        kwargs['conn'].commit()
+        #kwargs['conn'].commit()
     except Exception as err:
         kwargs['output'].write(
                 f"Error while inserting proceedings data ({work_doi}, "
@@ -218,7 +218,7 @@ def insert_general_work_data(work_doi, title, pubdate, pubtype, publisher,
                 "publisher end",
                 (work_doi, title, pubdate['year'], pubtype, publisher,
                  pubdate['month']))
-        kwargs['conn'].commit()
+        #kwargs['conn'].commit()
     except Exception as err:
         kwargs['output'].write(
                 f"Error while inserting general work data ({work_doi}, "

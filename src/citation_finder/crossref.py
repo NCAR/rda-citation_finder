@@ -227,13 +227,16 @@ def find_citations(**kwargs):
                 success, new_entry = insert_citation(
                         doi, work_doi, "CrossRef", **kwargs)
                 if not success:
+                    kwargs['conn'].rollback()
                     continue
 
                 insert_source(work_doi, doi, "CrossRef", **kwargs)
                 if not inserted_doi_data(doi, publisher, asset_type, **kwargs):
+                    kwargs['conn'].rollback()
                     continue
 
                 if kwargs['no_works'] or not new_entry:
+                    kwargs['conn'].commit()
                     continue
 
                 work_data = get_work_data(work_doi)
@@ -241,6 +244,7 @@ def find_citations(**kwargs):
                     kwargs['output'].write(
                             "***Unable to get CrossRef data for works DOI "
                             f"'{work_doi}'\n")
+                    kwargs['conn'].rollback()
                     continue
 
                 # add author data for the citing work
@@ -248,6 +252,7 @@ def find_citations(**kwargs):
                 # add type-specific data for the work
                 pubtype = insert_publication_data(work_data, **kwargs)
                 if pubtype is None:
+                    kwargs['conn'].rollback()
                     continue
 
                 # add general data about the work
@@ -267,6 +272,8 @@ def find_citations(**kwargs):
                     kwargs['output'].write(
                             "***NO OR BAD PUBLISHER DATE for work DOI "
                             f"{work_doi} citing {doi}\n")
+
+                kwargs['conn'].commit()
 
             next_cursor = j['message']['next-cursor']
 
