@@ -113,6 +113,7 @@ def find_citations(**kwargs):
                         f"***NO OR BAD PUBLISHER DATE for work DOI {work_doi} "
                         f"citing {doi}\n")
 
+            kwargs['output'].write(f"+++NEW CITATION: '{work_doi}'\n")
             kwargs['conn'].commit()
 
     if kwargs['doi_group'] == "gdex":

@@ -39,6 +39,7 @@ def process_work(work_doi, work, **kwargs):
                             "        Warning: missing publication month for "
                             f"work DOI {work_doi} citing {kwargs['doi']}\n")
 
+                kwargs['output'].write(f"+++NEW CITATION: '{work_doi}'\n")
                 kwargs['conn'].commit()
                 return
 
@@ -54,6 +55,7 @@ def process_work(work_doi, work, **kwargs):
         kwargs['output'].write(
                 "        Warning: missing publication month for work DOI "
                 f"{work_doi} citing {kwargs['doi']}\n")
+        kwargs['output'].write(f"+++NEW CITATION: '{work_doi}'\n")
         kwargs['conn'].commit()
         return
 
@@ -102,6 +104,7 @@ def process_work(work_doi, work, **kwargs):
         kwargs['output'].write(
                 "        Warning: missing publication month and publisher "
                 f"for work DOI {work_doi} citing {kwargs['doi']}\n")
+        kwargs['output'].write(f"+++NEW CITATION: '{work_doi}'\n")
         kwargs['conn'].commit()
         return
 

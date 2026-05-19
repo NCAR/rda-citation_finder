@@ -152,6 +152,7 @@ def find_citations(**kwargs):
                             "***NO OR BAD PUBLISHER DATE for work DOI "
                             f"{work_doi} citing {doi}\n")
 
+                kwargs['output'].write(f"+++NEW CITATION: '{work_doi}'\n")
                 kwargs['conn'].commit()
 
             params['page'] += 1
