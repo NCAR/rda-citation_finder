@@ -286,7 +286,7 @@ def find_citations(**kwargs):
                 kwargs['output'].write(f"+++NEW CITATION: '{work_doi}'\n")
                 kwargs['conn'].commit()
 
-            next_page = j['message']['next-page']
+            next_page = str(j['message']['next-page'])
 
     if kwargs['doi_group'] == "gdex":
         regenerate_dataset_descriptions(service="CrossRef", **kwargs)
