@@ -66,7 +66,6 @@ def find_citations(**kwargs):
         count = 0x7fffffff
         num_results = 0
         while num_results < count:
-            count = 0
             filename = (doi.replace("/", "@@") + ".openalex." +
                         str(params['page']) + ".json")
             filename = os.path.join(config['temporary-directory-path'],
@@ -91,7 +90,7 @@ def find_citations(**kwargs):
             if 'meta' not in j or 'results' not in j:
                 continue
 
-            if count == 0:
+            if count == 0x7fffffff:
                 count = j['meta']['count']
                 kwargs['output'].write(f"      {count} citations found ...\n")
 
