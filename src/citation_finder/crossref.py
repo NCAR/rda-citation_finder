@@ -21,7 +21,7 @@ from .utils import (convert_unicodes,
                     reset_new_flag)
 
 
-API_URL = "https://api.eventdata.crossref.org/v1/events"
+API_URL = "https://api.crossref.org/beta/datacitations"
 
 
 def get_work_data(work_doi):
@@ -170,13 +170,13 @@ def find_citations(**kwargs):
         err = f"***DATABASE ERROR from crossref.find_citations(): '{err}'"
         raise RuntimeError(err)
 
-    params = {'source': "crossref", 'obj-id': "", 'cursor': ""}
+    params = {'object-id': "", 'page': ""}
     for doi, publisher, asset_type in kwargs['doi_list']:
         kwargs['output'].write(
                 f"    querying DOI '{doi} | {publisher} | {asset_type}' ...\n")
-        next_cursor = "__first__"
-        while next_cursor is not None:
-            filename = (doi.replace("/", "@@") + ".crossref." + next_cursor +
+        next_page = "__first__"
+        while next_page is not None:
+            filename = (doi.replace("/", "@@") + ".crossref." + next_page +
                         ".json")
             filename = os.path.join(config['temporary-directory-path'],
                                     filename)
@@ -186,14 +186,18 @@ def find_citations(**kwargs):
 
             else:
                 params['obj-id'] = doi
-                if next_cursor != "__first__":
-                    params['cursor'] = next_cursor
+                if next_page != "__first__":
+                    params['page'] = next_page
 
                 num_tries = 0
                 while num_tries < 3:
                     time.sleep(num_tries * 5)
                     try:
                         response = requests.get(API_URL, params=params)
+                        if response.text == "Resource not found.":
+                            num_tries = 4
+                            break
+
                         j = json.loads(response.text)
                         with open(filename, "w") as f:
                             f.write(response.text)
@@ -208,21 +212,27 @@ def find_citations(**kwargs):
                     kwargs['output'].write(
                             f"Error reading CrossRef JSON for DOI '{doi}' "
                             "after three attempts\n")
-                    next_cursor = None
+                elif num_tries == 4:
+                    kwargs['output'].write(
+                            "CrossRef does not provide citations for DOI "
+                            f"'{doi}'\n")
+
+                if num_tries >= 3:
+                    next_page = None
                     continue
 
             if j['status'] != "ok":
                 Path(filename).unlink(missing_ok=True)
                 kwargs['output'].write(
                         f"Server failure for DOI '{doi}': '{j['message']}\n")
-                next_cursor = None
+                next_page = None
                 continue
 
             kwargs['output'].write(
-                    f"      {len(j['message']['events'])} citations "
+                    f"      {len(j['message']['items'])} citations "
                     "found ...\n")
-            for event in j['message']['events']:
-                work_doi = event['subj_id'].replace("\\/", "/")
+            for item in j['message']['items']:
+                work_doi = item['subject']['id'].replace("\\/", "/")
                 work_doi = work_doi.split("doi.org/")[-1]
                 success, new_entry = insert_citation(
                         doi, work_doi, "CrossRef", **kwargs)
@@ -276,7 +286,7 @@ def find_citations(**kwargs):
                 kwargs['output'].write(f"+++NEW CITATION: '{work_doi}'\n")
                 kwargs['conn'].commit()
 
-            next_cursor = j['message']['next-cursor']
+            next_page = j['message']['next-page']
 
     if kwargs['doi_group'] == "gdex":
         regenerate_dataset_descriptions(service="CrossRef", **kwargs)
