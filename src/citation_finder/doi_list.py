@@ -17,6 +17,7 @@ def get_doi_list_from_db(doi_group, **kwargs):
     conn.close()
     kwargs['output'].write(
             f"    ... found {len(doi_list)} DOIs.\n")
+    return doi_list
 
 
 def json_parse(response, json_path):
