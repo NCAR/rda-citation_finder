@@ -180,6 +180,11 @@ def find_citations(**kwargs):
                 works_id_params['firstRecord'] = num_records
                 continue
 
+            if (type(j['Data']['Records']['records']) is not dict or
+                    type(j['Data']['Records']['records']['REC']) is not list):
+                works_id_params['firstRecord'] = num_records
+                continue
+
             for work in j['Data']['Records']['records']['REC']:
                 work_doi = None
                 try:
