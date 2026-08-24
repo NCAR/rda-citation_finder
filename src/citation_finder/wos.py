@@ -242,7 +242,7 @@ def find_citations(**kwargs):
                 f"        {num_records} citations found ...\n")
 
     if kwargs['doi_group'] == "gdex":
-        regenerate_dataset_descriptions(service="CrossRef", **kwargs)
+        regenerate_dataset_descriptions(service="WoS", **kwargs)
 
     reset_new_flag(**kwargs)
     kwargs['conn'].close()
