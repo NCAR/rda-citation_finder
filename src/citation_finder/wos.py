@@ -12,7 +12,12 @@ from .inserts import (insert_citation, insert_general_work_data,
                       insert_journal_work_data, insert_source,
                       insert_work_author, inserted_doi_data)
 from .local_settings import config
-from .utils import convert_unicodes, db_connect, repair_string, verified_DOI
+from .utils import (convert_unicodes,
+                    db_connect,
+                    regenerate_dataset_descriptions,
+                    repair_string,
+                    reset_new_flag,
+                    verified_DOI)
 
 
 API_URL = "https://wos-api.clarivate.com/api/wos"
