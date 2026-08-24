@@ -73,7 +73,7 @@ def get_publication_date(message, **kwargs):
 
 
 def insert_authors(work_data, **kwargs):
-    if 'author' not in work_data:
+    if 'author' not in work_data['message']:
         return
 
     pid = {'id': work_data['message']['DOI'], 'type': "DOI"}
