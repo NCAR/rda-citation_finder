@@ -103,7 +103,7 @@ def regenerate_dataset_descriptions(**kwargs):
             kwargs['mail_message'].write(msg)
             try:
                 response = requests.get(
-                        f"https://gdex.ucar.edu/redeploy/dsgen{e[0]}")
+                        f"https://gdex.ucar.edu/redeploy/dsgen{e[0]}/")
                 response.raise_for_status()
             except Exception as err:
                 kwargs['output'].write(
