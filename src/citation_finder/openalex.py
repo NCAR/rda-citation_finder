@@ -96,6 +96,9 @@ def find_citations(**kwargs):
 
             num_results += len(j['results'])
             for result in j['results']:
+                if result['doi'] is None:
+                    continue
+
                 work_doi = result['doi'].replace("https://doi.org/", "")
                 is_valid_doi = verified_DOI(work_doi, **kwargs)
                 if not is_valid_doi:
