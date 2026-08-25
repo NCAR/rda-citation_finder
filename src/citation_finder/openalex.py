@@ -88,6 +88,7 @@ def find_citations(**kwargs):
                     continue
 
             if 'meta' not in j or 'results' not in j:
+                count = 0
                 continue
 
             if count == 0x7fffffff:
