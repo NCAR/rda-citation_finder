@@ -110,6 +110,24 @@ def run_integrity_checks(**kwargs):
     except Exception as err:
         kwargs['mail_message'].write(
                 f"  **Error checking for future publication months: '{err}'\n")
+
+    # check for book ISBNs with missing data
+    try:
+        cursor.execute(
+                "select c.isbn, b.isbn from citation.book_chapter_works as c "
+                "left join citation.book_works as b on b.isbn = c.isbn where "
+                "b.isbn is null")
+        res = cursor.fetchall()
+        kwargs['mail_message'].write(
+                f"  # book ISBNs without data: {len(res)}\n"
+                "   ISBN list:\n")
+        for e in res:
+            kwargs['mail_message'].write(f"      {e[0]}\n")
+
+    except Exception as err:
+        kwargs['mail_message'].write(
+                f"  **Error checking for missing book ISBN data: '{err}'\n")
+
     # print the publisher list
     try:
         cursor.execute(
