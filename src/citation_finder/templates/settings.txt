@@ -3,6 +3,7 @@
 #
 temporary-directory-path = <path>
 default-asset-type = <type>
+google-books-api-key = <api_key>
 #
 # if you omit the 'mail' entries, then the default will be:
 #    host: 'localhost', port: 465

@@ -7,6 +7,7 @@ def configure(settings_file):
     config = {
         'temporary-directory-path': "",
         'default-asset-type': "",
+        'google-books-api-key': "",
         'mail': {
             'host': "localhost",
             'port': "465",
