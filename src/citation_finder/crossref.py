@@ -7,6 +7,7 @@ from pathlib import Path
 
 from .inserts import (insert_citation,
                       insert_book_chapter_work_data,
+                      insert_book_work_data,
                       insert_general_work_data,
                       insert_journal_work_data,
                       insert_proceedings_work_data,
@@ -115,6 +116,7 @@ def insert_publication_data(work_data, **kwargs):
         insert_book_chapter_work_data(work_data['message']['DOI'],
                                       work_data['message']['ISBN'][0], pages,
                                       **kwargs)
+        insert_book_work_data(work_data['message']['ISBN'][0], **kwargs)
         return "C"
     elif typ == "journal-article":
         if ('container-title' not in work_data['message'] or
