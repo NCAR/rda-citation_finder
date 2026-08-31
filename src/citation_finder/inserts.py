@@ -160,35 +160,39 @@ def insert_book_chapter_work_data(work_doi, isbn, pages, **kwargs):
                 f"{isbn}, {pages}): '{err}'\n")
 
 
-def insert_book_work_data(isbn, **kwargs):
-    try:
-        cursor = kwargs['conn'].cursor()
-        cache_file = os.path.join(config['temporary-directory-path'],
-                                  "citation_cache",
-                                  isbn + ".openlibrary.json")
-        if not os.path.exists(cache_file):
-            try:
-                response = requests.get(
-                        "https://openlibrary.org/api/books?bibkeys="
-                        f"ISBN:{isbn}&jscmd=details&format=json")
-                with open(cache_file, "w") as f:
-                    f.write(response.text)
-
-            except Exception as err:
-                Path(cache_file).unlink(missing_ok=True)
-                raise RuntimeError(f"openlibrary error: '{err}'")
-
+def get_open_library_book_json(isbn, conn):
+    cache_file = os.path.join(config['temporary-directory-path'],
+                              "citation_cache",
+                              isbn + ".openlibrary.json")
+    if not os.path.exists(cache_file):
         try:
-            with open(cache_file, "r") as f:
-                j = json.load(f)
-
-            if len(j) == 0:
-                Path(cache_file).unlink(missing_ok=True)
-                raise RuntimeError("no data available from Open Library")
+            response = requests.get(
+                    "https://openlibrary.org/api/books?bibkeys="
+                    f"ISBN:{isbn}&jscmd=details&format=json")
+            with open(cache_file, "w") as f:
+                f.write(response.text)
 
         except Exception as err:
-            raise RuntimeError(f"cache file open error: '{err}'")
+            Path(cache_file).unlink(missing_ok=True)
+            raise RuntimeError(f"openlibrary error: '{err}'")
 
+    try:
+        with open(cache_file, "r") as f:
+            j = json.load(f)
+
+        if len(j) == 0:
+            Path(cache_file).unlink(missing_ok=True)
+            raise RuntimeError("no data available from Open Library")
+
+    except Exception as err:
+        raise RuntimeError(f"cache file open error: '{err}'")
+
+    return j
+
+
+def insert_book_work_data(isbn, **kwargs):
+    try:
+        j = get_open_library_book_json(isbn, kwargs['conn'])
         details = j['ISBN:'+isbn]['details']
         authors = []
         if 'authors' not in details:
@@ -233,6 +237,7 @@ def insert_book_work_data(isbn, **kwargs):
         for sequence, author in enumerate(authors):
             insert_work_author(pid, author, sequence, "Open Library", **kwargs)
 
+        cursor = kwargs['conn'].cursor()
         cursor.execute(
                 f"insert into {config['citation-database']['schemaname']}."
                 "book_works (isbn, title, publisher) values (%s, %s, %s) on "
