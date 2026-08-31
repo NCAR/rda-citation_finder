@@ -1,4 +1,9 @@
+import json
+import os
 import psycopg2
+import requests
+
+from pathlib import Path
 
 from .local_settings import config
 
@@ -153,6 +158,89 @@ def insert_book_chapter_work_data(work_doi, isbn, pages, **kwargs):
         kwargs['output'].write(
                 f"Error while inserting book chapter data ({work_doi}, "
                 f"{isbn}, {pages}): '{err}'\n")
+
+
+def insert_book_work_data(isbn, **kwargs):
+    try:
+        cursor = kwargs['conn'].cursor()
+        cache_file = os.path.join(config['temporary-directory-path'],
+                                  "citation_cache",
+                                  isbn + ".openlibrary.json")
+        if not os.path.exists(cache_file):
+            try:
+                response = requests.get(
+                        "https://openlibrary.org/api/books?bibkeys="
+                        f"ISBN:{isbn}&jscmd=details&format=json")
+                with open(cache_file, "w") as f:
+                    f.write(response.text)
+
+            except Exception as err:
+                Path(cache_file).unlink(missing_ok=True)
+                raise RuntimeError(f"openlibrary error: '{err}'")
+
+        try:
+            with open(cache_file, "r") as f:
+                j = json.load(f)
+
+        except Exception as err:
+            raise RuntimeError(f"file open error: '{err}'")
+
+        details = j['ISBN:'+isbn]['details']
+        authors = []
+        if 'authors' not in details:
+            if ('by_statement' not in details or
+                    details['by_statement'].find("edited by ") != 0):
+                raise RuntimeError(
+                        f"Missing Open Library author(s) for ISBN: '{isbn}'")
+
+            authors.append({'given': None, 'middle': "", 'family': None})
+            parts = details['by_statement'][10:].split()
+            if parts[-1][-1] == ".":
+                parts[-1] = parts[-1][0:-1]
+
+            if parts[0].count(".") > 1:
+                parts0 = parts[0].split(".")
+                if len(parts0[-1]) == 0:
+                    del parts0[-1]
+
+                authors[-1]['given'] = parts0[0] + "."
+                authors[-1]['middle'] = ". ".join(parts0[1:]) + "."
+            else:
+                authors[-1]['given'] = parts[0]
+                del parts[0]
+                if len(parts) > 1:
+                    authors[-1]['middle'] = parts[0]
+                    del parts[0]
+
+            authors[-1]['family'] = " ".join(parts)
+        else:
+            for author in details['authors']:
+                authors.append({'given': None, 'middle': "", 'family': None})
+                parts = author['name'].split()
+                authors[-1]['given'] = parts[0]
+                del parts[0]
+                if len(parts) > 1:
+                    authors[-1]['middle'] = parts[0]
+                    del parts[0]
+
+                authors[-1]['family'] = " ".join(parts)
+
+        pid = {'id': isbn, 'type': "ISBN"}
+        for sequence, author in enumerate(authors):
+            insert_work_author(pid, author, sequence, "Open Library", kwargs)
+
+        cursor.execute(
+                f"insert into {config['citation-database']['schemaname']}."
+                "book_works (ibsn, title, publisher) values (%s, %s, %s) on"
+                "constraint book_works_pkey do update set title = case when "
+                "length(excluded.title) > length(book_works.title) then "
+                "excluded.title else book_works.title end, publisher = case "
+                "when length(excluded.publisher) > length(book_works."
+                "publisher) then excluded.publisher else book_works.publisher "
+                "end", (isbn, details['title'], details['publishers'][0]))
+    except Exception as err:
+        kwargs['output'].write(
+                f"Error while inserting book data ({isbn}): '{err}'\n")
 
 
 def insert_journal_work_data(work_doi, pubname, volume, pages, **kwargs):
