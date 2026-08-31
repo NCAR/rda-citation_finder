@@ -227,7 +227,7 @@ def insert_book_work_data(isbn, **kwargs):
 
         pid = {'id': isbn, 'type': "ISBN"}
         for sequence, author in enumerate(authors):
-            insert_work_author(pid, author, sequence, "Open Library", kwargs)
+            insert_work_author(pid, author, sequence, "Open Library", **kwargs)
 
         cursor.execute(
                 f"insert into {config['citation-database']['schemaname']}."
