@@ -182,6 +182,10 @@ def insert_book_work_data(isbn, **kwargs):
             with open(cache_file, "r") as f:
                 j = json.load(f)
 
+            if len(j) == 0:
+                Path(cache_file).unlink(missing_ok=True)
+                raise RuntimeError("no data available from Open Library")
+
         except Exception as err:
             raise RuntimeError(f"file open error: '{err}'")
 
