@@ -232,10 +232,10 @@ def insert_book_work_data(isbn, **kwargs):
         cursor.execute(
                 f"insert into {config['citation-database']['schemaname']}."
                 "book_works (ibsn, title, publisher) values (%s, %s, %s) on "
-                "constraint book_works_pkey do update set title = case when "
-                "length(excluded.title) > length(book_works.title) then "
-                "excluded.title else book_works.title end, publisher = case "
-                "when length(excluded.publisher) > length(book_works."
+                "conflict on constraint book_works_pkey do update set title = "
+                "case when length(excluded.title) > length(book_works.title) "
+                "then excluded.title else book_works.title end, publisher = "
+                "case when length(excluded.publisher) > length(book_works."
                 "publisher) then excluded.publisher else book_works.publisher "
                 "end", (isbn, details['title'], details['publishers'][0]))
     except Exception as err:
