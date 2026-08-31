@@ -187,7 +187,7 @@ def insert_book_work_data(isbn, **kwargs):
                 raise RuntimeError("no data available from Open Library")
 
         except Exception as err:
-            raise RuntimeError(f"file open error: '{err}'")
+            raise RuntimeError(f"cache file open error: '{err}'")
 
         details = j['ISBN:'+isbn]['details']
         authors = []
