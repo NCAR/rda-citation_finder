@@ -160,7 +160,7 @@ def insert_book_chapter_work_data(work_doi, isbn, pages, **kwargs):
                 f"{isbn}, {pages}): '{err}'\n")
 
 
-def get_open_library_book_json(isbn, conn):
+def get_open_library_book_json(isbn):
     cache_file = os.path.join(config['temporary-directory-path'],
                               "citation_cache",
                               isbn + ".openlibrary.json")
@@ -185,14 +185,44 @@ def get_open_library_book_json(isbn, conn):
             raise RuntimeError("no data available from Open Library")
 
     except Exception as err:
-        raise RuntimeError(f"cache file open error: '{err}'")
+        raise RuntimeError(f"cache file '{cache_file}' open error: '{err}'")
+
+    return j
+
+
+def get_google_books_json(isbn):
+    cache_file = os.path.join(config['temporary-directory-path'],
+                              "citation_cache",
+                              isbn + ".googlebooks.json")
+    if not os.path.exists(cache_file):
+        try:
+            response = requests.get(
+                    f"https://www.googleapis.com/books/v1/volumes?q=isbn{isbn}"
+                    f"&key={config['google-books-api-key']}")
+            with open(cache_file, "w") as f:
+                f.write(response.text)
+
+        except Exception as err:
+            Path(cache_file).unlink(missing_ok=True)
+            raise RuntimeError(f"google books error: '{err}'")
+
+    try:
+        with open(cache_file, "r") as f:
+            j = json.load(f)
+
+        if j['totalItems'] == 0:
+            Path(cache_file).unlink(missing_ok=True)
+            raise RuntimeError("no data available from Google Books")
+
+    except Exception as err:
+        raise RuntimeError(f"cache file '{cache_file}' open error: '{err}'")
 
     return j
 
 
 def insert_book_work_data(isbn, **kwargs):
     try:
-        j = get_open_library_book_json(isbn, kwargs['conn'])
+        j = get_open_library_book_json(isbn)
         details = j['ISBN:'+isbn]['details']
         authors = []
         if 'authors' not in details:
@@ -247,9 +277,42 @@ def insert_book_work_data(isbn, **kwargs):
                 "case when length(excluded.publisher) > length(book_works."
                 "publisher) then excluded.publisher else book_works.publisher "
                 "end", (isbn, details['title'], details['publishers'][0]))
-    except Exception as err:
-        kwargs['output'].write(
-                f"Error while inserting book data ({isbn}): '{err}'\n")
+    except Exception:
+        try:
+            j = get_open_library_book_json(isbn)
+            vinfo = j['items'][0]['volumeInfo']
+            authors = []
+            for author in vinfo['authors']:
+                authors.append({'given': None, 'middle': "", 'family': None})
+                parts = author.split()
+                authors[-1]['given'] = parts[0]
+                del parts[0]
+                if len(parts) > 1:
+                    authors[-1]['middle'] = parts[0]
+                    del parts[0]
+
+                authors[-1]['family'] = " ".join(parts)
+
+            pid = {'id': isbn, 'type': "ISBN"}
+            for sequence, author in enumerate(authors):
+                insert_work_author(pid, author, sequence, "Google Books",
+                                   **kwargs)
+
+            cursor = kwargs['conn'].cursor()
+            cursor.execute(
+                    f"insert into {config['citation-database']['schemaname']}."
+                    "book_works (isbn, title, publisher) values (%s, %s, %s) "
+                    "on conflict on constraint book_works_pkey do update set "
+                    "title = case when length(excluded.title) > length("
+                    "book_works.title) then excluded.title else book_works."
+                    "title end, publisher = case when length(excluded."
+                    "publisher) > length(book_works.publisher) then excluded."
+                    "publisher else book_works.publisher end",
+                    (isbn, vinfo['title'].replace("\\", "\\\\"),
+                     vinfo['publisher']))
+        except Exception as err:
+            kwargs['output'].write(
+                    f"Error while inserting book data ({isbn}): '{err}'\n")
 
 
 def insert_journal_work_data(work_doi, pubname, volume, pages, **kwargs):
