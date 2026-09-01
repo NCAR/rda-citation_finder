@@ -279,7 +279,7 @@ def insert_book_work_data(isbn, **kwargs):
                 "end", (isbn, details['title'], details['publishers'][0]))
     except Exception:
         try:
-            j = get_open_library_book_json(isbn)
+            j = get_google_books_json(isbn)
             vinfo = j['items'][0]['volumeInfo']
             authors = []
             for author in vinfo['authors']:
