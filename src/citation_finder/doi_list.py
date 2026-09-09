@@ -1,4 +1,5 @@
 import json
+import jsonpath_ng
 import requests
 
 from .local_settings import config
@@ -56,6 +57,9 @@ def get_doi_list_from_api(doi_group, **kwargs):
     kwargs['output'].write("    filling list from an api ...\n")
     api = config['doi-groups'][doi_group]['doi-query']['api']
     base_url = api['url']
+    dois = []
+    publishers = []
+    asset_types = []
     page_count = 1
     page_number = 1
     while page_number <= page_count:
@@ -68,17 +72,24 @@ def get_doi_list_from_api(doi_group, **kwargs):
 
             url += f"{api['pagination']['page-number']}={page_number}"
             page_number += 1
+            if 'page-size' in api['pagination']:
+                url += f"&{api['pagination']['page-size']}"
 
         print(url)
         response = requests.get(url)
-        dois = json_parse(response, api['response']['doi'])
-        publishers = json_parse(response, api['response']['publisher'])
-        asset_types = json_parse(response, api['response']['asset-type'],
-                                 lower=True)
+        dois.extend([e.value for e in jsonpath_ng.parse(api['response']['doi'])
+                     .find(response.json())])
+        publishers.extend([e.value for e in
+                           jsonpath_ng.parse(api['response']['publisher'])
+                           .find(response.json())])
+        asset_types.extend([e.value.lower() for e in
+                            jsonpath_ng.parse(api['response']['asset-type'])
+                            .find(response.json())])
 
         if 'pagination' in api and 'page-count' in api['pagination']:
             page_count = (
-                    json_parse(response, api['pagination']['page-count'])[0])
+                    jsonpath_ng.parse(api['pagination']['page-count'])
+                    .find(response.json())[0])
 
     doi_list = list(zip(dois, publishers, asset_types))
     kwargs['output'].write(f"    ... found {len(doi_list)} DOIs.\n")
