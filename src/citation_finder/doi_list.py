@@ -21,38 +21,6 @@ def get_doi_list_from_db(doi_group, **kwargs):
     return doi_list
 
 
-def json_parse(response, json_path, **kwargs):
-    nodes = json_path.split(".")
-    if nodes[0] == "$":
-        del nodes[0]
-    else:
-        raise ValueError(f"'{json_path}' is not a valid JSON path")
-
-    vals = []
-    lower = kwargs['lower'] if 'lower' in kwargs else False
-    o = json.loads(response.text)
-    for x in range(0, len(nodes)):
-        if nodes[x].endswith("[*]"):
-            for entry in o[nodes[x][:-3]]:
-                for y in range(x+1, len(nodes)):
-                    entry = entry[nodes[y]]
-
-                if lower:
-                    entry = entry.lower()
-
-                vals.append(entry)
-
-            break
-
-        else:
-            o = o[nodes[x]]
-
-    if len(vals) == 0:
-        vals.append(o)
-
-    return vals
-
-
 def get_doi_list_from_api(doi_group, **kwargs):
     kwargs['output'].write("    filling list from an api ...\n")
     api = config['doi-groups'][doi_group]['doi-query']['api']
