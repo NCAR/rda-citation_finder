@@ -20,7 +20,7 @@ def get_doi_list_from_db(doi_group, **kwargs):
     return doi_list
 
 
-def json_parse(response, json_path):
+def json_parse(response, json_path, **kwargs):
     nodes = json_path.split(".")
     if nodes[0] == "$":
         del nodes[0]
@@ -28,12 +28,16 @@ def json_parse(response, json_path):
         raise ValueError(f"'{json_path}' is not a valid JSON path")
 
     vals = []
+    lower = kwargs['lower'] if 'lower' in kwargs else False
     o = json.loads(response.text)
     for x in range(0, len(nodes)):
         if nodes[x].endswith("[*]"):
             for entry in o[nodes[x][:-3]]:
                 for y in range(x+1, len(nodes)):
                     entry = entry[nodes[y]]
+
+                if lower:
+                    entry = entry.lower()
 
                 vals.append(entry)
 
@@ -69,7 +73,8 @@ def get_doi_list_from_api(doi_group, **kwargs):
         response = requests.get(url)
         dois = json_parse(response, api['response']['doi'])
         publishers = json_parse(response, api['response']['publisher'])
-        asset_types = json_parse(response, api['response']['asset-type'])
+        asset_types = json_parse(response, api['response']['asset-type'],
+                                 lower=True)
 
     doi_list = list(zip(dois, publishers, asset_types))
     kwargs['output'].write(f"    ... found {len(doi_list)} DOIs.\n")
