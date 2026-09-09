@@ -129,6 +129,7 @@ def find_citations(**kwargs):
     wos_id_params = {'databaseId': "DCI", 'count': 1, 'firstRecord': 1,
                      'viewField': "none", 'optionView': "SR"}
     for doi, publisher, asset_type in kwargs['doi_list']:
+        time.sleep(0.6)
         kwargs['output'].write(
                 f"    querying DOI '{doi} | {publisher} | {asset_type}' ...\n")
         # get the WoS ID for the DOI
