@@ -76,6 +76,9 @@ def get_doi_list_from_api(doi_group, **kwargs):
         asset_types = json_parse(response, api['response']['asset-type'],
                                  lower=True)
 
+        if 'pagination' in api and 'page-count' in api['pagination']:
+            page_count = json_parse(response, api['pagination']['page-count'])
+
     doi_list = list(zip(dois, publishers, asset_types))
     kwargs['output'].write(f"    ... found {len(doi_list)} DOIs.\n")
     return doi_list
