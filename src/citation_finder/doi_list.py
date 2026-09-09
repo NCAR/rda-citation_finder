@@ -49,7 +49,7 @@ def json_parse(response, json_path):
 
 
 def get_doi_list_from_api(doi_group, **kwargs):
-    kwargs['output'].write("    filling list from a database ...\n")
+    kwargs['output'].write("    filling list from an api ...\n")
     api = config['doi-groups'][doi_group]['doi-query']['api']
     base_url = api['url']
     page_count = 1
