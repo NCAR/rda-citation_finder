@@ -89,7 +89,7 @@ def get_doi_list_from_api(doi_group, **kwargs):
         if 'pagination' in api and 'page-count' in api['pagination']:
             page_count = (
                     jsonpath_ng.parse(api['pagination']['page-count'])
-                    .find(response.json())[0])
+                    .find(response.json())[0].value)
 
     doi_list = list(zip(dois, publishers, asset_types))
     kwargs['output'].write(f"    ... found {len(doi_list)} DOIs.\n")
