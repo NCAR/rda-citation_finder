@@ -53,3 +53,4 @@ api-response_asset-type = <doi_group_id>:<api_response_jsonpath_dot_notation>
 #
 api-pagination_page-count = <doi_group_id>:<api_response_jsonpath_dot_notation>
 api-pagination_page-number = <doi_group_id>:<api_query_parameter>
+api-pagination_page-size = <doi_group_id>:<api_query_parameter_nv_pair>
