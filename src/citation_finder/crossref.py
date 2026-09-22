@@ -55,29 +55,28 @@ def get_publication_date(message):
         dp = message['published']['date-parts'][0]
         if len(dp) >= 2:
             pubdate.update({'year': dp[0], 'month': dp[1]})
-        elif len(dp) == 1:
-            pubdate.update({'year': dp[0], 'month': 0})
-            if (message['type'] == 'journal-article' and 'created' in message
-                    and 'date-parts' in message['created']):
-                dp = message['created']['date-parts'][0]
-                if len(dp) >= 2:
-                    pubdate['month'] = dp[1]
-
-        return pubdate
+            return pubdate
 
     if ('published-print' in message and 'date-parts' in
-            message['published-print'] and
-            len(message['published-print']['date-parts'][0]) >= 2):
+            message['published-print']):
         dp = message['published-print']['date-parts'][0]
-        pubdate.update({'year': dp[0], 'month': dp[1]})
-        return pubdate
+        if len(dp) >= 2:
+            pubdate.update({'year': dp[0], 'month': dp[1]})
+            return pubdate
 
     if ('published-online' in message and 'date-parts' in
-            message['published-online'] and
-            len(message['published-online']['date-parts'][0]) >= 2):
+            message['published-online']):
         dp = message['published-online']['date-parts'][0]
-        pubdate.update({'year': dp[0], 'month': dp[1]})
-        return pubdate
+        if len(dp) >= 2:
+            pubdate.update({'year': dp[0], 'month': dp[1]})
+            return pubdate
+
+    if (message['type'] == 'journal-article' and 'created' in message
+            and 'date-parts' in message['created']):
+        dp = message['created']['date-parts'][0]
+        if len(dp) >= 2:
+            pubdate['month'] = dp[1]
+            return pubdate
 
     return pubdate
 
