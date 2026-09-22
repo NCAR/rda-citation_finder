@@ -75,7 +75,7 @@ def get_publication_date(message):
             and 'date-parts' in message['created']):
         dp = message['created']['date-parts'][0]
         if len(dp) >= 2:
-            pubdate['month'] = dp[1]
+            pubdate.update({'year': dp[0], 'month': dp[1]})
             return pubdate
 
     return pubdate
