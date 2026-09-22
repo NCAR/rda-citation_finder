@@ -57,18 +57,27 @@ def get_publication_date(message, **kwargs):
             pubdate.update({'year': dp[0], 'month': dp[1]})
         elif len(dp) == 1:
             pubdate.update({'year': dp[0], 'month': 0})
+            if (message['type'] == 'journal-article' and 'created' in message
+                    and 'date-parts' in message['created']):
+                dp = message['created']['date-parts']
+                if len(dp) >= 2:
+                    pubdate['month'] = dp[1]
 
-    if (len(pubdate) == 0 and 'published-print' in message and 'date-parts' in
+        return pubdate
+
+    if ('published-print' in message and 'date-parts' in
             message['published-print'] and
             len(message['published-print']['date-parts'][0]) >= 2):
         dp = message['published-print']['date-parts'][0]
         pubdate.update({'year': dp[0], 'month': dp[1]})
+        return pubdate
 
-    if (len(pubdate) == 0 and 'published-online' in message and 'date-parts' in
+    if ('published-online' in message and 'date-parts' in
             message['published-online'] and
             len(message['published-online']['date-parts'][0]) >= 2):
         dp = message['published-online']['date-parts'][0]
         pubdate.update({'year': dp[0], 'month': dp[1]})
+        return pubdate
 
     return pubdate
 
