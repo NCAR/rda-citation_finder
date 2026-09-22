@@ -47,6 +47,7 @@ def configure(settings_file):
                 'asset-type': "",
             },
             'pagination': {
+                'page-size': "",
                 'page-count': "",
                 'page-number': "",
             },
