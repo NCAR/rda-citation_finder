@@ -49,7 +49,7 @@ def get_work_data(work_doi):
         return None
 
 
-def get_publication_date(message, **kwargs):
+def get_publication_date(message):
     pubdate = {}
     if ('published' in message and 'date-parts' in message['published']):
         dp = message['published']['date-parts'][0]
@@ -59,7 +59,7 @@ def get_publication_date(message, **kwargs):
             pubdate.update({'year': dp[0], 'month': 0})
             if (message['type'] == 'journal-article' and 'created' in message
                     and 'date-parts' in message['created']):
-                dp = message['created']['date-parts']
+                dp = message['created']['date-parts'][0]
                 if len(dp) >= 2:
                     pubdate['month'] = dp[1]
 
