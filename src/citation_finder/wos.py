@@ -33,7 +33,7 @@ def process_work(work_doi, work, **kwargs):
         if pubtype is not None:
             # add general data about the work
             message = work_data['message']
-            pubdate = get_crossref_publication_date(message, **kwargs)
+            pubdate = get_crossref_publication_date(message)
             if len(pubdate) > 0:
                 title = convert_unicodes(repair_string(message['title'][0]))
                 insert_general_work_data(
