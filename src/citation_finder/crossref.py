@@ -81,6 +81,7 @@ def get_publication_date(message):
             pubdate['month'] = dp[1]
             return pubdate
 
+    pubdate['month'] = 0
     return pubdate
 
 
